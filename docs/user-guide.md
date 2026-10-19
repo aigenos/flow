@@ -122,7 +122,7 @@ for. Five things make this different from a flowchart tool:
   above it offers *Add a Confirm step above this*.
 - **Change it in a sentence.** The box above the canvas takes a request in
   plain words: *"also ask for a contact email, and let it be left blank"*, or
-  *"if more than 30 people are coming, it also needs a yes from the VP"*. The
+  *"if more than 30 people are coming, it also needs a yes from the owner"*. The
   AI writes the change and the loader reads it before it reaches you, so it
   arrives on the canvas unsaved and already checked, with the changed steps
   counted and the first one selected. Undo takes it back; only Save keeps it.
