@@ -1,0 +1,328 @@
+{
+ "captured": "2026-10-05T22:55:06-04:00",
+ "attribution": "Hotel and route data © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright). Hotels via the Overpass API; routes via the OSRM demo server.",
+ "hotels": [
+  {
+   "hotel_id": "w80296747",
+   "name": "W San Francisco",
+   "address": "181 3rd Street",
+   "lat": 37.785468,
+   "lon": -122.40045
+  },
+  {
+   "hotel_id": "n3455075367",
+   "name": "The St. Regis San Francisco",
+   "address": "125 3rd Street",
+   "lat": 37.786057,
+   "lon": -122.401381
+  },
+  {
+   "hotel_id": "w243356609",
+   "name": "Canopy by Hilton San Francisco SoMa",
+   "address": "250 4th Street",
+   "lat": 37.782364,
+   "lon": -122.402125
+  },
+  {
+   "hotel_id": "r6483285",
+   "name": "San Francisco Marriott Marquis",
+   "address": "780 Mission Street",
+   "lat": 37.785381,
+   "lon": -122.404422
+  },
+  {
+   "hotel_id": "w118480404",
+   "name": "Hyatt Regency San Francisco Downtown SOMA",
+   "address": "50 3rd Street",
+   "lat": 37.786561,
+   "lon": -122.40309
+  },
+  {
+   "hotel_id": "w35174699",
+   "name": "The Mosser",
+   "address": "54 4th Street",
+   "lat": 37.784877,
+   "lon": -122.405137
+  },
+  {
+   "hotel_id": "w149332498",
+   "name": "Four Seasons",
+   "address": "757 Market Street",
+   "lat": 37.786221,
+   "lon": -122.404247
+  },
+  {
+   "hotel_id": "n3396652935",
+   "name": "Hotel Zelos San Francisco",
+   "address": "12 4th Street",
+   "lat": 37.785286,
+   "lon": -122.4055
+  },
+  {
+   "hotel_id": "w256029743",
+   "name": "Intercontinental San Francisco",
+   "address": "888 Howard Street",
+   "lat": 37.78207,
+   "lon": -122.404759
+  },
+  {
+   "hotel_id": "r3492933",
+   "name": "Palace Hotel",
+   "address": "2 New Montgomery Street",
+   "lat": 37.787969,
+   "lon": -122.401945
+  },
+  {
+   "hotel_id": "n13055672443",
+   "name": "The Pickwick Hotel",
+   "address": "85 5th Street",
+   "lat": 37.783055,
+   "lon": -122.406669
+  },
+  {
+   "hotel_id": "w332627661",
+   "name": "Hotel Zetta San Francisco",
+   "address": "55 5th Street",
+   "lat": 37.783514,
+   "lon": -122.406871
+  },
+  {
+   "hotel_id": "w112774492",
+   "name": "The Clancy, Autograph Collection",
+   "address": "299 2nd Street",
+   "lat": 37.786019,
+   "lon": -122.396737
+  },
+  {
+   "hotel_id": "n11777394281",
+   "name": "CW Hotel",
+   "address": "917 Folsom Street",
+   "lat": 37.77977,
+   "lon": -122.403618
+  },
+  {
+   "hotel_id": "w941560578",
+   "name": "CitizenM Union Square",
+   "address": "72 Ellis Street",
+   "lat": 37.785802,
+   "lon": -122.407462
+  },
+  {
+   "hotel_id": "n924624361",
+   "name": "Hotel Union Square",
+   "address": "",
+   "lat": 37.785799,
+   "lon": -122.407741
+  },
+  {
+   "hotel_id": "n11701941352",
+   "name": "Hotel 964",
+   "address": "952 Howard Street",
+   "lat": 37.780648,
+   "lon": -122.406307
+  },
+  {
+   "hotel_id": "w256037015",
+   "name": "Axiom Hotel",
+   "address": "",
+   "lat": 37.784898,
+   "lon": -122.408166
+  },
+  {
+   "hotel_id": "w929538709",
+   "name": "Hampton Inn San Francisco Downtown/Convention Center",
+   "address": "942 Mission Street",
+   "lat": 37.782147,
+   "lon": -122.407795
+  },
+  {
+   "hotel_id": "w256030639",
+   "name": "Alkain Hotel",
+   "address": "948 Mission Street",
+   "lat": 37.782003,
+   "lon": -122.407857
+  },
+  {
+   "hotel_id": "n769361407",
+   "name": "Hotel Abri",
+   "address": "127 Ellis Street",
+   "lat": 37.785193,
+   "lon": -122.408367
+  },
+  {
+   "hotel_id": "w35174698",
+   "name": "St. Moritz Hotel",
+   "address": "180 O'Farrell Street",
+   "lat": 37.786668,
+   "lon": -122.407776
+  },
+  {
+   "hotel_id": "n973620751",
+   "name": "Herbert Hotel",
+   "address": "161 Powell Street",
+   "lat": 37.786233,
+   "lon": -122.408144
+  },
+  {
+   "hotel_id": "w216220328",
+   "name": "The Utah Inn",
+   "address": "504 4th Street",
+   "lat": 37.779305,
+   "lon": -122.398159
+  },
+  {
+   "hotel_id": "w132125160",
+   "name": "Galleria Park Hotel",
+   "address": "191 Sutter Street",
+   "lat": 37.789605,
+   "lon": -122.403514
+  },
+  {
+   "hotel_id": "w147689070",
+   "name": "Hotel Fusion",
+   "address": "",
+   "lat": 37.78572,
+   "lon": -122.40853
+  },
+  {
+   "hotel_id": "w35174694",
+   "name": "Hotel Stratford",
+   "address": "236 Powell Street",
+   "lat": 37.786996,
+   "lon": -122.407901
+  },
+  {
+   "hotel_id": "w288512967",
+   "name": "Parc 55 San Francisco - a Hilton Hotel",
+   "address": "55 Cyril Magnin Street",
+   "lat": 37.784886,
+   "lon": -122.409012
+  },
+  {
+   "hotel_id": "n11705906477",
+   "name": "Holiday Inn Express",
+   "address": "235 O'Farrell Street",
+   "lat": 37.786175,
+   "lon": -122.408667
+  },
+  {
+   "hotel_id": "w35024381",
+   "name": "The Barnes San Francisco, Tapestry Collection by Hilton",
+   "address": "225 Powell Street",
+   "lat": 37.786681,
+   "lon": -122.408452
+  },
+  {
+   "hotel_id": "w288721098",
+   "name": "Hotel Alder",
+   "address": "175 6th Street",
+   "lat": 37.78022,
+   "lon": -122.407394
+  },
+  {
+   "hotel_id": "w924131189",
+   "name": "Sunset Hotel",
+   "address": "",
+   "lat": 37.780391,
+   "lon": -122.407607
+  },
+  {
+   "hotel_id": "w172250618",
+   "name": "Hotel Ikon",
+   "address": "323 Sutter Street",
+   "lat": 37.789311,
+   "lon": -122.405855
+  },
+  {
+   "hotel_id": "w256029745",
+   "name": "The Rose",
+   "address": "125 6th Street",
+   "lat": 37.780839,
+   "lon": -122.408109
+  },
+  {
+   "hotel_id": "w35024383",
+   "name": "The Bartlett Hotel and Guesthouse",
+   "address": "238 O'Farrell Street",
+   "lat": 37.786619,
+   "lon": -122.408776
+  },
+  {
+   "hotel_id": "n1229745496",
+   "name": "Sunnyside Hotel",
+   "address": "135 6th Street",
+   "lat": 37.78056,
+   "lon": -122.407985
+  },
+  {
+   "hotel_id": "w50832129",
+   "name": "Hotel Nikko San Francisco",
+   "address": "222 Mason Street",
+   "lat": 37.785801,
+   "lon": -122.409266
+  },
+  {
+   "hotel_id": "w151184978",
+   "name": "The Handlery Union Square Hotel",
+   "address": "",
+   "lat": 37.786557,
+   "lon": -122.408997
+  },
+  {
+   "hotel_id": "w260162808",
+   "name": "Hotel Bijou San Francisco",
+   "address": "111 Mason Street",
+   "lat": 37.784491,
+   "lon": -122.409605
+  },
+  {
+   "hotel_id": "w35536860",
+   "name": "Taj Campton Place Hotel",
+   "address": "340 Stockton Street",
+   "lat": 37.789165,
+   "lon": -122.40658
+  }
+ ],
+ "routes": {
+  "w80296747": {
+   "metres": 22869.6,
+   "seconds": 1223.9
+  },
+  "n3455075367": {
+   "metres": 22442.3,
+   "seconds": 1161.5
+  },
+  "w243356609": {
+   "metres": 21871.9,
+   "seconds": 1154.3
+  },
+  "r6483285": {
+   "metres": 22748.6,
+   "seconds": 1212.1
+  },
+  "w118480404": {
+   "metres": 22633.8,
+   "seconds": 1179.6
+  },
+  "w35174699": {
+   "metres": 22946.3,
+   "seconds": 1250.3
+  },
+  "w149332498": {
+   "metres": 22704.0,
+   "seconds": 1189.8
+  },
+  "n3396652935": {
+   "metres": 22840.6,
+   "seconds": 1265.9
+  },
+  "w256029743": {
+   "metres": 22775.4,
+   "seconds": 1207.0
+  },
+  "r3492933": {
+   "metres": 22684.2,
+   "seconds": 1183.7
+  }
+ }
+}

@@ -1,0 +1,741 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Theme tokens (CSS variables) ----------
+   Warm paper neutrals, one teal accent taken from the logo. Light is the
+   default (applied pre-paint by the inline script in index.html); the .dark
+   fallback below is what `:root` carries so a themeless render still reads.
+
+   There is deliberately no second accent. `--accent` is kept as an alias of
+   `--brand` so any stray `bg-accent` utility stays on-palette instead of
+   reintroducing the violet. */
+
+:root {
+  --bg-base: 250 249 247;         /* #faf9f7 warm off-white */
+  --bg-surface: 255 255 255;
+  --bg-elevated: 255 255 255;
+  --bg-muted: 243 241 237;        /* #f3f1ed */
+
+  --border-subtle: 28 26 23 / 0.07;
+  --border-default: 28 26 23 / 0.12;
+  --border-strong: 28 26 23 / 0.20;
+
+  --text-primary: 28 26 23;       /* #1c1a17 warm near-black */
+  --text-secondary: 90 85 78;
+  --text-muted: 138 131 121;
+
+  --brand: 23 128 138;            /* #17808a deep teal, sampled from the logo */
+  --brand-hover: 17 104 112;
+  --brand-subtle: 23 128 138 / 0.09;
+  --brand-ring: 23 128 138 / 0.32;
+
+  --accent: 23 128 138;           /* alias of --brand; no second hue */
+  --accent-hover: 17 104 112;
+  --on-brand: 255 255 255;        /* readable text on a --brand fill */
+
+  /* Elevation, not glow — depth comes from shadow, never from a colored halo. */
+  --shadow-glow: 0 1px 2px rgb(28 26 23 / 0.07), 0 8px 22px -10px rgb(28 26 23 / 0.20);
+  --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 14px 40px -24px rgb(28 26 23 / 0.16);
+  --shadow-float: 0 1px 0 rgb(255 255 255 / 0.85) inset, 0 24px 64px -32px rgb(28 26 23 / 0.24);
+
+  --spring-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  --bg-gradient:
+    radial-gradient(1200px 720px at 50% -12%, rgb(23 128 138 / 0.05), transparent 62%),
+    rgb(250 249 247);
+}
+
+/* Dark — a warm charcoal lifted well off pure black, same single accent. */
+html.dark,
+:root:where(.dark) {
+  --bg-base: 24 23 21;            /* #181715 */
+  --bg-surface: 31 30 27;         /* #1f1e1b */
+  --bg-elevated: 38 36 33;        /* #262421 */
+  --bg-muted: 46 44 40;           /* #2e2c28 */
+
+  --border-subtle: 255 252 246 / 0.08;
+  --border-default: 255 252 246 / 0.13;
+  --border-strong: 255 252 246 / 0.22;
+
+  --text-primary: 245 243 239;
+  --text-secondary: 178 172 163;
+  --text-muted: 133 127 118;
+
+  --brand: 92 190 197;            /* lifted for contrast on charcoal */
+  --brand-hover: 132 214 219;
+  --brand-subtle: 92 190 197 / 0.14;
+  --brand-ring: 92 190 197 / 0.40;
+
+  --accent: 92 190 197;
+  --accent-hover: 132 214 219;
+  /* The dark-mode teal is light, so its text has to go dark to stay legible. */
+  --on-brand: 18 30 32;
+
+  --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -10px rgb(0 0 0 / 0.55);
+  --shadow-card: 0 1px 0 rgb(255 252 246 / 0.04) inset, 0 16px 44px -26px rgb(0 0 0 / 0.7);
+  --shadow-float: 0 1px 0 rgb(255 252 246 / 0.06) inset, 0 26px 70px -34px rgb(0 0 0 / 0.78);
+
+  --bg-gradient:
+    radial-gradient(1200px 720px at 50% -12%, rgb(92 190 197 / 0.07), transparent 62%),
+    rgb(24 23 21);
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  html { font: 100%/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif; }
+  body {
+    font-feature-settings: "cv11", "ss01", "ss03";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    color: rgb(var(--text-primary));
+    background: var(--bg-gradient);
+    transition: background 280ms ease, color 280ms ease;
+  }
+  button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+  button, [role="button"] { touch-action: manipulation; }
+  ::selection { background: rgb(var(--brand-ring)); }
+
+  /* Themed scrollbars — apply globally so Monaco, skill list, and any
+     overflow areas blend into the theme instead of showing the default
+     light-grey system scrollbar. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--text-muted) / 0.25) transparent;
+  }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--text-muted) / 0.25);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: rgb(var(--brand) / 0.50); background-clip: padding-box; }
+  *::-webkit-scrollbar-corner { background: transparent; }
+
+  /* Smooth theme transitions on common surfaces — opt in via .theme-transition */
+  .theme-transition,
+  .theme-transition * {
+    transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-lg border border-border bg-bg-muted px-3 py-2 text-xs focus:outline-none focus:ring-2;
+    --tw-ring-color: rgb(var(--brand-ring));
+  }
+  .glass {
+    background: rgb(var(--bg-surface) / 0.68);
+    backdrop-filter: blur(24px) saturate(165%);
+    -webkit-backdrop-filter: blur(24px) saturate(165%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+  }
+  /* Premium frosted panel — layered depth for cards, dialogs, hero surfaces. */
+  .glass-card {
+    background: rgb(var(--bg-surface) / 0.64);
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 1rem;
+    backdrop-filter: blur(28px) saturate(155%);
+    -webkit-backdrop-filter: blur(28px) saturate(155%);
+    box-shadow: var(--shadow-card);
+  }
+  .hero-material {
+    position: relative;
+    background:
+      linear-gradient(145deg, rgb(var(--bg-surface) / 0.78), rgb(var(--bg-surface) / 0.58)),
+      radial-gradient(circle at 50% 0%, rgb(var(--brand) / 0.12), transparent 58%);
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 1.5rem;
+    backdrop-filter: blur(32px) saturate(165%);
+    -webkit-backdrop-filter: blur(32px) saturate(165%);
+    box-shadow: var(--shadow-float);
+  }
+  .surface-card {
+    background: rgb(var(--bg-surface) / 0.84);
+    border: 1px solid rgb(var(--border-subtle));
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 14px 40px -30px rgb(0 0 0 / 0.65);
+  }
+  .nav-material {
+    background: rgb(var(--bg-surface) / 0.72);
+    backdrop-filter: blur(26px) saturate(175%);
+    -webkit-backdrop-filter: blur(26px) saturate(175%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  }
+  .nav-edge::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -0.75rem;
+    height: 0.75rem;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgb(var(--bg-base) / 0.16), transparent);
+  }
+  .control-press {
+    transform: translateZ(0);
+    transition-property: transform, background-color, border-color, color, opacity;
+    transition-duration: 100ms, 160ms, 160ms, 160ms, 160ms;
+    transition-timing-function: var(--ease-out);
+  }
+  .control-press:not(:disabled):active { transform: scale(0.97); transition-duration: 160ms; }
+  .role-indicator { transition: transform 180ms var(--ease-in-out); }
+  .icon-control { min-width: 2.25rem; min-height: 2.25rem; }
+  .agent-composer {
+    background: rgb(var(--bg-muted) / 0.72);
+    border: 1px solid rgb(var(--border-default));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035);
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+  .agent-composer:focus-within {
+    background: rgb(var(--bg-muted) / 0.9);
+    border-color: rgb(var(--brand) / 0.72);
+    box-shadow: 0 0 0 3px rgb(var(--brand) / 0.13), inset 0 1px 0 rgb(255 255 255 / 0.05);
+  }
+  .chat-composer {
+    background: rgb(var(--bg-muted) / 0.78);
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 1rem;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 8px 28px -24px rgb(0 0 0 / 0.75);
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+  .chat-composer:focus-within {
+    background: rgb(var(--bg-muted) / 0.94);
+    border-color: rgb(var(--brand) / 0.68);
+    box-shadow: 0 0 0 3px rgb(var(--brand) / 0.12), 0 10px 32px -24px rgb(0 0 0 / 0.75);
+  }
+  .material-popover {
+    background: rgb(var(--bg-elevated) / 0.9);
+    backdrop-filter: blur(28px) saturate(170%);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    box-shadow: var(--shadow-float);
+    transform-origin: top right;
+  }
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgb(0 0 0 / 0.58);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 1;
+    transition: opacity 180ms var(--ease-out);
+  }
+  .dialog-viewport {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 1rem;
+  }
+  .dialog-popup {
+    width: 100%;
+    background: rgb(var(--bg-elevated) / 0.94);
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 1rem;
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
+    box-shadow: var(--shadow-float);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transform-origin: center;
+    transition: transform 240ms var(--ease-out), opacity 180ms var(--ease-out);
+  }
+  .dialog-backdrop[data-starting-style],
+  .dialog-backdrop[data-ending-style] { opacity: 0; }
+  .dialog-popup[data-starting-style] { opacity: 0; transform: translateY(6px) scale(0.97); }
+  .dialog-popup[data-ending-style] {
+    opacity: 0;
+    transform: translateY(2px) scale(0.985);
+    transition-duration: 140ms;
+  }
+  .mobile-menu-popup {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transform-origin: var(--transform-origin, top right);
+    transition: transform 180ms var(--ease-out), opacity 140ms var(--ease-out);
+  }
+  .mobile-menu-popup[data-starting-style] { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  .mobile-menu-popup[data-ending-style] {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.985);
+    transition-duration: 120ms;
+  }
+  .hero-enter { animation: hero-enter 220ms var(--ease-out) both; }
+  .hero-enter-delay-1 { animation-delay: 50ms; }
+  .hero-enter-delay-2 { animation-delay: 100ms; }
+  .hero-enter-delay-3 { animation-delay: 150ms; }
+  .shimmer-surface {
+    position: relative;
+    overflow: hidden;
+    background: rgb(var(--bg-muted) / 0.65);
+  }
+  .shimmer-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgb(var(--text-muted) / 0.09), transparent);
+    transform: translateX(-100%);
+    animation: shimmer-slide 1.6s linear infinite;
+  }
+  /* ---------- Welcome landing (first-run product page) ---------- */
+  .wel-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(110px);
+    animation: wel-drift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  /* Second aurora layer: a warm counter-tone on a slower, phase-offset clock,
+     so the hero wash slowly breathes instead of sliding as one sheet. */
+  .wel-blob-b { animation: wel-drift-b 26s ease-in-out -9s infinite alternate; }
+  /* Ambient color bloom behind a screenshot — decorative, Welcome-only. Brand
+     teal top-left, warm paper gold bottom-right, heavily blurred and quiet;
+     real elevation still comes from the frame's shadow, and the UI-wide
+     "no colored halos" rule stays intact outside this landing. */
+  .wel-halo { position: relative; }
+  .wel-halo::before {
+    content: "";
+    position: absolute;
+    inset: -6% -5% -9%;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 2rem;
+    background:
+      radial-gradient(55% 60% at 20% 16%, rgb(var(--brand) / 0.22), transparent 62%),
+      radial-gradient(52% 56% at 80% 86%, rgb(191 131 62 / 0.17), transparent 66%);
+    filter: blur(46px);
+  }
+  html.dark .wel-halo::before {
+    background:
+      radial-gradient(55% 60% at 20% 16%, rgb(var(--brand) / 0.24), transparent 62%),
+      radial-gradient(52% 56% at 80% 86%, rgb(201 146 78 / 0.16), transparent 66%);
+  }
+  .wel-marquee {
+    display: flex;
+    width: max-content;
+    animation: wel-marquee 30s linear infinite;
+  }
+  .wel-shot {
+    animation: wel-shot 0.9s var(--ease-out) 0.2s both;
+  }
+  /* Screenshot frame. One hairline, one shadow — the glow lives on the page
+     backdrop, not welded onto every surface. */
+  .wel-frame {
+    border: 1px solid rgb(var(--border-default));
+    border-radius: 1rem;
+    overflow: hidden;
+    background: rgb(var(--bg-surface));
+    box-shadow: 0 0 0 1px rgb(var(--brand) / 0.07), var(--shadow-float);
+  }
+  .wel-grid-bg {
+    background-image:
+      linear-gradient(rgb(var(--text-muted) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--text-muted) / 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 38%, black 30%, transparent 75%);
+  }
+  /* ---------- Background mark: the flow, seen from far away ----------
+     One node per step kind on a single spine. The
+     pulse STEPS from node to node instead of gliding, because a flow runs
+     discrete steps, and every cycle is identical. Two of these flank the hero
+     on the same 900ms clock, so the two runs stay in lockstep: the
+     determinism claim drawn rather than asserted. Purely decorative. */
+  .wel-chain {
+    width: 9px;
+    mask-image: linear-gradient(to bottom, transparent, black 14%, black 86%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 14%, black 86%, transparent);
+  }
+  .wel-chain-spine {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    transform: translateX(-50%);
+    background: rgb(var(--brand) / 0.22);
+  }
+  .wel-chain-node {
+    position: absolute;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 2px;
+    background: rgb(var(--bg-base));
+    box-shadow: 0 0 0 1px rgb(var(--brand) / 0.32);
+  }
+  .wel-chain-pulse {
+    position: absolute;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 999px;
+    background: rgb(var(--brand) / 0.8);
+    box-shadow: 0 0 10px 2px rgb(var(--brand) / 0.3);
+    animation: wel-chain-step 7.2s steps(8, end) infinite;
+  }
+  /* The vocabulary at the closing CTA, executing on that same clock. */
+  .wel-verb { animation: wel-verb-tick 7.2s linear infinite; }
+
+  /* Sections fade up the first time they scroll into view (set by an
+     IntersectionObserver, so it fires once and never re-hides). */
+  .wel-reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
+  }
+  .wel-reveal[data-shown] { opacity: 1; transform: none; }
+
+  /* ---------- In-app documentation viewer (`/docs`) ---------- */
+  .doc-prose { color: rgb(var(--text-secondary)); font-size: 0.95rem; line-height: 1.75; }
+  .doc-prose h1 { color: rgb(var(--text-primary)); font-size: 1.9rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 1rem; }
+  .doc-prose h2 { color: rgb(var(--text-primary)); font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; margin: 2.25rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid rgb(var(--border-subtle)); }
+  .doc-prose h3 { color: rgb(var(--text-primary)); font-size: 1.08rem; font-weight: 650; margin: 1.75rem 0 0.5rem; }
+  .doc-prose h4 { color: rgb(var(--text-primary)); font-size: 0.95rem; font-weight: 650; margin: 1.25rem 0 0.4rem; }
+  .doc-prose p { margin: 0.7rem 0; }
+  .doc-prose a { color: rgb(var(--brand)); text-decoration: none; }
+  .doc-prose a:hover { color: rgb(var(--brand-hover)); text-decoration: underline; text-underline-offset: 3px; }
+  .doc-prose strong, .doc-prose b { color: rgb(var(--text-primary)); font-weight: 650; }
+  .doc-prose ul, .doc-prose ol { margin: 0.7rem 0; padding-left: 1.4rem; }
+  .doc-prose li { margin: 0.3rem 0; }
+  .doc-prose li::marker { color: rgb(var(--text-muted)); }
+  .doc-prose code { font-family: theme(fontFamily.mono); font-size: 0.875em; background: rgb(var(--bg-muted)); border: 1px solid rgb(var(--border-subtle)); border-radius: 5px; padding: 0.1em 0.35em; color: rgb(var(--brand-hover)); }
+  .doc-prose pre { position: relative; background: rgb(var(--bg-surface)); border: 1px solid rgb(var(--border-subtle)); border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto; margin: 1rem 0; box-shadow: var(--shadow-card); }
+
+  /* Section link, revealed on heading hover — present for keyboard users too. */
+  .doc-anchor {
+    margin-left: 0.4em;
+    font-weight: 400;
+    color: rgb(var(--text-muted)) !important;
+    opacity: 0;
+    transition: opacity 140ms var(--ease-out), color 140ms ease;
+  }
+  .doc-prose :is(h2, h3):hover .doc-anchor,
+  .doc-anchor:focus-visible { opacity: 1; }
+  .doc-anchor:hover { color: rgb(var(--brand)) !important; text-decoration: none !important; }
+
+  /* Copy button, injected into every code block after render. */
+  .doc-copy {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    border: 1px solid rgb(var(--border-subtle));
+    border-radius: 7px;
+    background: rgb(var(--bg-muted) / 0.9);
+    padding: 0.2rem 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: rgb(var(--text-muted));
+    opacity: 0;
+    transition: opacity 140ms var(--ease-out), color 140ms ease, border-color 140ms ease;
+  }
+  .doc-prose pre:hover .doc-copy,
+  .doc-copy:focus-visible { opacity: 1; }
+  .doc-copy:hover { color: rgb(var(--text-primary)); border-color: rgb(var(--border-default)); }
+  .doc-copy[data-done] { opacity: 1; color: rgb(var(--brand)); border-color: rgb(var(--brand) / 0.4); }
+  .doc-prose pre code { background: transparent; border: 0; padding: 0; color: rgb(var(--text-secondary)); font-size: 0.85rem; line-height: 1.65; }
+  .doc-prose blockquote { border-left: 3px solid rgb(var(--brand) / 0.5); background: rgb(var(--brand-subtle)); border-radius: 0 10px 10px 0; margin: 1rem 0; padding: 0.6rem 1rem; }
+  .doc-prose blockquote p { margin: 0.25rem 0; }
+  .doc-prose hr { border: 0; border-top: 1px solid rgb(var(--border-subtle)); margin: 2rem 0; }
+  .doc-prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.875rem; display: block; overflow-x: auto; }
+  .doc-prose th { text-align: left; color: rgb(var(--text-muted)); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.72rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid rgb(var(--border-default)); white-space: nowrap; }
+  .doc-prose td { padding: 0.55rem 0.75rem; border-bottom: 1px solid rgb(var(--border-subtle)); vertical-align: top; }
+  .doc-prose img { max-width: 100%; border-radius: 12px; border: 1px solid rgb(var(--border-subtle)); }
+  .doc-prose h1 a, .doc-prose h2 a, .doc-prose h3 a { color: inherit; }
+
+  /* Accent text for hero lines. Flat brand — the emphasis comes from the
+     color shift alone, not from a gradient sweep. */
+  .grad-text { color: rgb(var(--brand)); }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: rgb(var(--text-muted) / 0.25); border-radius: 999px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-muted) / 0.45); }
+
+  /* Sleek focus ring used across inputs/buttons */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-0;
+    --tw-ring-color: rgb(var(--brand-ring));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover { transform: translateY(-2px); }
+  .group:hover .motion-arrow { transform: translateX(2px); }
+}
+
+/* ---------- React Flow chrome ----------
+   reactflow/dist/style.css hard-codes light chrome (#fefefe buttons, black
+   glyphs) for the zoom controls, which stayed white on the dark canvas. Its
+   stylesheet is unlayered, so these overrides must be unlayered too — rules
+   inside @layer always lose to unlayered ones — and carry the extra
+   `.react-flow` ancestor so they win regardless of import order. */
+.react-flow .react-flow__controls-button {
+  background: rgb(var(--bg-elevated));
+  border-bottom: 1px solid rgb(var(--border-subtle));
+  color: rgb(var(--text-secondary));
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.react-flow .react-flow__controls-button:hover {
+  background: rgb(var(--bg-muted));
+  color: rgb(var(--text-primary));
+}
+/* The glyphs are bare <path>s with no fill, so they default to black. */
+.react-flow .react-flow__controls-button svg,
+.react-flow .react-flow__controls-button svg path {
+  fill: currentColor;
+}
+
+/* ---------- Embeddable renderer: container-query responsiveness ----------
+   Mirrors styles/lib.css so the demo matches the published component. Widgets
+   adapt to their own container width (CSS Container Queries), and rows stack
+   on a narrow container instead of overflowing. */
+.aig-widget {
+  container-type: inline-size;
+}
+
+@container (max-width: 360px) {
+  .aig-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Honor users who prefer reduced motion (accessibility — modern web guidance). */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-pulse {
+    animation: none !important;
+  }
+  .hero-enter,
+  .shimmer-surface::after { animation: none !important; }
+  .wel-blob, .wel-marquee { animation: none !important; }
+  .wel-shot { animation: reduced-feedback 160ms ease-out both !important; }
+  .wel-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  /* The mark stays — only its motion goes. The pulse rests on the first node. */
+  .wel-chain-pulse, .wel-verb { animation: none !important; }
+  body { transition: none; }
+}
+
+/* Visually-hidden text that stays in the accessibility tree; visible on focus. */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Visual cue for user-invalid fields (pairs with aria-invalid in the renderer). */
+.aig-widget input:user-invalid,
+.aig-widget select:user-invalid {
+  border-color: rgb(244 63 94);
+}
+
+/* ---------- Widget editor canvas (direct manipulation) ----------
+   Elements rendered with a data-aig-id are click-to-select targets; hover
+   shows a dashed hint, the selected outline is injected per-id by Preview. */
+.aig-editing [data-aig-id] {
+  cursor: pointer;
+}
+.aig-editing [data-aig-id]:hover {
+  outline: 1px dashed rgb(var(--brand) / 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- Widget & Message entrance animations ---------- */
+@keyframes widget-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes msg-slide-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes btn-glow {
+  0%, 100% { box-shadow: 0 0 4px rgb(var(--brand) / 0.3); }
+  50% { box-shadow: 0 0 16px rgb(var(--brand) / 0.6); }
+}
+
+/* Welcome landing motion */
+@keyframes wel-drift {
+  from { transform: translate3d(-4%, -3%, 0) scale(1); }
+  to   { transform: translate3d(5%, 6%, 0) scale(1.15); }
+}
+@keyframes wel-drift-b {
+  from { transform: translate3d(6%, 2%, 0) scale(0.94); }
+  to   { transform: translate3d(-5%, -5%, 0) scale(1.1); }
+}
+@keyframes wel-marquee {
+  to { transform: translateX(-50%); }
+}
+@keyframes wel-shot {
+  from { opacity: 0; transform: perspective(1400px) rotateX(7deg) translateY(34px) scale(0.985); }
+  to   { opacity: 1; transform: perspective(1400px) rotateX(0deg) translateY(0) scale(1); }
+}
+
+/* Travel distance is set from JS so the step count and the row height can't
+   drift apart — see CHAIN_ROWS / CHAIN_ROW in WelcomePage. */
+@keyframes wel-chain-step {
+  from { transform: translateY(0); }
+  to   { transform: translateY(var(--wel-chain-travel)); }
+}
+
+/* Each chip lights for ~0.5s in flow order, then returns to rest. The rest
+   state is written out explicitly: a property that stops being mentioned
+   would otherwise hold its last keyframe value instead of returning. */
+@keyframes wel-verb-tick {
+  0%, 10% {
+    color: rgb(var(--brand));
+    border-color: rgb(var(--brand) / 0.35);
+    background: rgb(var(--brand) / 0.10);
+  }
+  22%, 100% {
+    color: rgb(var(--text-secondary));
+    border-color: rgb(var(--border-subtle));
+    background: rgb(var(--bg-muted) / 0.5);
+  }
+}
+
+/* Field validation states */
+.field-valid {
+  border-color: #22c55e !important;
+  transition: border-color 0.2s ease;
+}
+.field-invalid {
+  border-color: #ef4444 !important;
+  transition: border-color 0.2s ease;
+}
+.field-validating {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.16);
+}
+.field-error-msg {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  animation: widget-enter 0.2s ease-out;
+}
+.field-valid-icon::after {
+  content: '\2713';
+  color: #22c55e;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+/* Widget container animation */
+.widget-enter {
+  animation: widget-enter 0.24s var(--ease-out);
+}
+
+/* Form submit button glow */
+.form-submit-btn {
+  animation: btn-glow 2s ease-in-out infinite;
+}
+
+/* Composer focus gradient — brand cyan -> accent violet, on-token */
+.composer-focused {
+  border-color: transparent;
+  background:
+    linear-gradient(rgb(var(--bg-surface)), rgb(var(--bg-surface))) padding-box,
+    linear-gradient(135deg, rgb(var(--brand)), rgb(var(--accent))) border-box;
+  border-width: 1.5px;
+  border-style: solid;
+}
+
+/* Character count */
+.char-count {
+  font-size: 0.7rem;
+  color: var(--text-muted, #888);
+  text-align: right;
+  padding: 2px 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.char-count.visible {
+  opacity: 1;
+}
+
+/* Honor reduced-motion for new animations */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes reduced-feedback {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .widget-enter,
+  .field-error-msg {
+    animation: reduced-feedback 160ms ease-out !important;
+  }
+  .field-validating { animation: none !important; }
+  .form-submit-btn { animation: none !important; }
+  .control-press { transition-duration: 0ms !important; }
+  .control-press:not(:disabled):active { transform: none; }
+  .role-indicator { transition: none !important; }
+  .dialog-popup,
+  .mobile-menu-popup { transform: none !important; transition: opacity 160ms ease-out !important; }
+  .hero-material, .glass-card, .material-popover { animation: reduced-feedback 160ms ease-out !important; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-card,
+  .hero-material,
+  .nav-material,
+  .material-popover,
+  .dialog-popup,
+  .dialog-backdrop {
+    background: rgb(var(--bg-surface) / 0.98) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .glass,
+  .glass-card,
+  .hero-material,
+  .surface-card,
+  .nav-material,
+  .material-popover,
+  .dialog-popup {
+    background: rgb(var(--bg-surface) / 0.98) !important;
+    border-color: rgb(var(--text-primary) / 0.34) !important;
+  }
+  .text-text-muted { color: rgb(var(--text-secondary)); }
+}
+
+@media (pointer: coarse) {
+  .control-press { min-height: 2.75rem; }
+}
+
+/* Voice conversation: the bars that move while the bot thinks or speaks. */
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+.voice-bars > span {
+  animation: voice-bar 0.85s ease-in-out infinite;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .voice-bars > span { animation: none; transform: scaleY(0.6); }
+}

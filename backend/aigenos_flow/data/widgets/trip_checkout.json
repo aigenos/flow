@@ -1,0 +1,75 @@
+{
+  "id": "trip_checkout",
+  "version": "1.0.0",
+  "description": "Checkout page for a trip: itinerary timeline, cost lines and one Pay button. Referenced from conference-trip/SKILL.md; the Pay button submits a typed boolean, so no model is involved in paying.",
+  "bindings": ["flight", "hotel", "cab", "events", "lines", "total"],
+  "submit_schema": {
+    "type": "object",
+    "properties": { "pay": { "type": "boolean" } },
+    "required": ["pay"]
+  },
+  "spec": {
+    "type": "card",
+    "props": { "title": "Review and pay", "subtitle": "Innovation AI Conference · Moscone Center, San Francisco" },
+    "children": [
+      {
+        "type": "row",
+        "props": { "justify": "start", "gap": "sm" },
+        "children": [
+          { "type": "badge", "props": { "label": "✈ {{flight}}" }, "children": [] },
+          { "type": "badge", "props": { "label": "🏨 {{hotel}}" }, "children": [] },
+          { "type": "badge", "props": { "label": "🚕 {{cab}}" }, "children": [] }
+        ]
+      },
+      { "type": "divider", "props": {}, "children": [] },
+      {
+        "type": "text",
+        "props": { "value": "Itinerary", "weight": "bold", "style": { "size": 13, "transform": "uppercase", "spacing": 1 } },
+        "children": []
+      },
+      { "type": "timeline", "props": { "events": "{{events}}" }, "children": [] },
+      { "type": "divider", "props": {}, "children": [] },
+      {
+        "type": "text",
+        "props": { "value": "Cost", "weight": "bold", "style": { "size": 13, "transform": "uppercase", "spacing": 1 } },
+        "children": []
+      },
+      {
+        "type": "datatable",
+        "props": {
+          "rows": "{{lines}}",
+          "columns": [
+            { "key": "item", "label": "Item" },
+            { "key": "amount", "label": "Amount" }
+          ],
+          "fields": {}
+        },
+        "children": []
+      },
+      {
+        "type": "alert",
+        "props": {
+          "tone": "info",
+          "message": "Demo checkout: nothing is reserved and no card is charged. Hotels, the cab route and the taxi tariff are real data; flights and room rates are sample values."
+        },
+        "children": []
+      },
+      {
+        "type": "row",
+        "props": { "justify": "end", "gap": "sm" },
+        "children": [
+          {
+            "type": "button",
+            "props": { "label": "Not now", "variant": "ghost", "action": "submit", "payload": { "pay": false } },
+            "children": []
+          },
+          {
+            "type": "button",
+            "props": { "label": "Pay {{total}} (demo)", "variant": "primary", "action": "submit", "payload": { "pay": true } },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

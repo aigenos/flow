@@ -1,0 +1,38 @@
+{
+  "id": "account_table",
+  "version": "1.0.0",
+  "description": "Datatable to pick one of a client's accounts.",
+  "bindings": ["rows"],
+  "submit_schema": {
+    "type": "object",
+    "properties": {
+      "account_number": { "type": "string" },
+      "account_type": { "type": "string" }
+    },
+    "required": ["account_number", "account_type"]
+  },
+  "spec": {
+    "type": "card",
+    "props": { "title": "Select an account" },
+    "children": [
+      {
+        "type": "form",
+        "props": { "submitLabel": "Use this account" },
+        "children": [
+          {
+            "type": "datatable",
+            "props": {
+              "rows": "{{rows}}",
+              "columns": [
+                { "key": "account_number", "label": "Account" },
+                { "key": "account_type", "label": "Type" },
+                { "key": "balance", "label": "Balance" }
+              ],
+              "fields": { "account_number": "account_number", "account_type": "account_type" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

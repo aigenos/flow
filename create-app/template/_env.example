@@ -1,0 +1,16 @@
+# Drop ONE key below and the server auto-detects the provider on startup.
+# Or install nothing here and run a local model with Ollama (no key needed) —
+# the app then needs `ollama pull qwen3:8b` once before chat works.
+#
+# With no working model the UI still boots: GET /api/health reports ok:false
+# with the exact reason, and the chat tab shows it as a banner.
+
+GEMINI_API_KEY=
+# OPENAI_API_KEY=
+# ANTHROPIC_API_KEY=
+
+# Optional explicit overrides:
+# FG_PROVIDER=gemini            # gemini | openai | anthropic | ollama
+# FG_MODEL=gemini-3.8-flash     # model for whichever provider is selected
+# FG_OLLAMA_MODEL=qwen3:8b      # local model for the keyless / docker ollama path
+# OLLAMA_HOST=http://127.0.0.1:11434

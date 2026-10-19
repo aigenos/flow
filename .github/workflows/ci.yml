@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-tests:
+    # Single package now: `aigenos-flow`. The deterministic engine lives at the
+    # `aigenos_flow` package root; the `[server]` extra adds the FastAPI widget
+    # layer. The suite covers both (tests/flow/ = engine, tests/ = widget server).
+    name: python tests (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install package + test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "backend[server,connectors,dev]"
+
+      - name: Import smoke
+        run: |
+          python -c "import aigenos_flow; from aigenos_flow import FlowAgent, flow, action; print('engine OK', aigenos_flow.__version__)"
+          python -c "from aigenos_flow.integrations.flow import make_flow_router, resolve_widget_for_field; print('bridge OK')"
+          python -c "from aigenos_flow.skill_generator import generate_skill_files; print('skill_generator OK')"
+
+      - name: Run pytest
+        run: pytest backend/tests -v
+
+  frontend-build:
+    name: frontend build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build the demo app (typechecks the whole tree)
+        working-directory: frontend
+        run: npm run build
+
+      # The PUBLISHED artifact is the library, not the demo app. Build it and run
+      # the release gate, so a package that would ship the wrong files (or a
+      # primitive that stops honouring a documented prop) fails here instead of
+      # on npm.
+      - name: Build + verify the published library
+        working-directory: frontend
+        run: |
+          npm run build:lib
+          npm run check:lib
+
+      - name: Verify the published file list
+        working-directory: frontend
+        run: npm pack --dry-run --ignore-scripts
+
+  create-app:
+    name: scaffold package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check the scaffold package (offline)
+        working-directory: create-app
+        run: node scripts/check-package.mjs

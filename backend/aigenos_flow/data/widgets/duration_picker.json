@@ -1,0 +1,88 @@
+{
+  "id": "duration_picker",
+  "version": "1.0.0",
+  "description": "Pre-authored meeting-duration picker. Designed once in the Widgets tab, then referenced from book-meeting-room/SKILL.md via `widget: duration_picker`. Demonstrates how a deterministic flow can render a custom-designed UX without changing any Python.",
+  "bindings": ["date", "start_time", "room"],
+  "submit_schema": {
+    "type": "object",
+    "properties": {
+      "duration_minutes": {
+        "type": "string",
+        "enum": ["15", "30", "45", "60", "90", "120"]
+      }
+    },
+    "required": ["duration_minutes"]
+  },
+  "spec": {
+    "type": "card",
+    "props": {
+      "title": "How long is the meeting?",
+      "subtitle": "Pick a duration \u2014 common defaults below."
+    },
+    "children": [
+      {
+        "type": "text",
+        "props": {
+          "content": "Booking {{room}} on {{date}} at {{start_time}}"
+        },
+        "children": []
+      },
+      {
+        "type": "form",
+        "props": {
+          "submitLabel": "Confirm duration"
+        },
+        "children": [
+          {
+            "type": "select",
+            "props": {
+              "name": "duration_minutes",
+              "label": "Duration",
+              "required": true,
+              "options": [
+                {
+                  "label": "15 min \u2014 quick sync",
+                  "value": "15"
+                },
+                {
+                  "label": "30 min \u2014 standard",
+                  "value": "30"
+                },
+                {
+                  "label": "45 min",
+                  "value": "45"
+                },
+                {
+                  "label": "1 hour",
+                  "value": "60"
+                },
+                {
+                  "label": "1.5 hours",
+                  "value": "90"
+                },
+                {
+                  "label": "2 hours",
+                  "value": "120"
+                }
+              ]
+            },
+            "children": []
+          },
+          {
+            "type": "divider",
+            "props": {},
+            "children": []
+          },
+          {
+            "type": "alert",
+            "props": {
+              "tone": "info",
+              "message": "Please don't select longer durations by default"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

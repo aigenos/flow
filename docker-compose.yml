@@ -1,0 +1,118 @@
+# Local stack for aigenos/flow.
+#
+#   docker compose up        — backend + frontend + redis
+#   docker compose --profile ollama up   — also runs local Ollama (GPU optional)
+#
+# What works today: chat with the bundled skills (examples/studio_agent/skills)
+# at http://localhost:5173. Use an Anthropic key (ANTHROPIC_API_KEY in a .env
+# next to this file), or the ollama profile after pulling the model FG_MODEL
+# names:
+#   docker compose --profile ollama exec ollama ollama pull qwen3:8b
+# The backend image installs the Anthropic and Ollama providers only.
+#
+# Conversations are held in memory and are lost when the backend restarts.
+# FG_TRACKER_STORE_URL points at redis, but the image does not install the
+# langgraph checkpoint package it needs, so the server falls back to memory.
+#
+# Studio authoring (opening a skill on the Canvas, Create, Save) is refused
+# here: those requests reach the backend from the container network, not from
+# loopback. Use the local dev setup (uvicorn + npm run dev) for that. The
+# skills folder is bind-mounted, so a skill edited on the host is loaded the
+# next time the backend starts.
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: aigenos/flows-backend:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Points at the redis service below. Falls back to memory in this image
+      # (see the header).
+      FG_TRACKER_STORE_URL: redis://redis:6379
+      # Skills directory inside the container — bind-mounted from host below
+      FG_SKILLS_DIR: /app/skills
+      # Connector control plane (set both secrets in .env before using Studio).
+      FG_CONNECTOR_STORE_PATH: /app/data/connectors.sqlite3
+      FG_CONNECTOR_ADMIN_TOKEN: ${FG_CONNECTOR_ADMIN_TOKEN:-}
+      FG_CONNECTOR_MASTER_KEY: ${FG_CONNECTOR_MASTER_KEY:-}
+      FG_CONNECTOR_AUDIT_RETENTION_DAYS: ${FG_CONNECTOR_AUDIT_RETENTION_DAYS:-90}
+      FG_CONNECTOR_ALLOW_INSECURE_LOCAL: ${FG_CONNECTOR_ALLOW_INSECURE_LOCAL:-false}
+      # LLM provider auto-detect. Set ANTHROPIC_API_KEY in your .env (next to compose).
+      # The OpenAI and Gemini keys below answer 503 in this image, which installs
+      # only the Anthropic and Ollama providers.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # With no key set, falls back to local Ollama (the ollama profile)
+      FG_MODEL: ${FG_MODEL:-qwen3:8b}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+      # Side-effects from generated actions (optional)
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      # Interpreter mode: flex (default) or strict
+      FG_MODE: ${FG_MODE:-flex}
+    volumes:
+      # Mount your local skills folder: a skill edited on the host is loaded
+      # the next time the backend starts (in-UI edits are refused here)
+      - ./examples/studio_agent/skills:/app/skills
+      - connector-data:/app/data
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: aigenos/flows-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "5173:8080"
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Optional: local Ollama for zero-API-key demos.
+  # Enable with:  docker compose --profile ollama up
+  ollama:
+    profiles: ["ollama"]
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    # GPU passthrough (NVIDIA): uncomment if you have nvidia-container-toolkit
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: ["gpu"]
+
+volumes:
+  redis-data:
+  ollama-data:
+  connector-data:

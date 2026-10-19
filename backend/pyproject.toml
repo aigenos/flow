@@ -1,0 +1,167 @@
+[project]
+name = "aigenos-flow"
+version = "0.3.1"
+description = "Deterministic conversational flows for LangGraph agents — with an optional drop-in widget layer (AG-UI/A2UI/MCP-UI)."
+authors = [{ name = "aigenos" }]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.11"
+readme = "README.md"
+keywords = [
+  "langgraph", "ai-agents", "conversational-ai", "deterministic",
+  "skills", "dialogue", "chatbot",
+  "agui", "a2ui", "mcp-ui", "widgets", "react",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Typing :: Typed",
+]
+
+# Lean core — just the deterministic flow engine. Embeds in any LangGraph /
+# ReAct agent without pulling a web server.
+#
+# Every floor below was verified by installing it and running the four
+# documented entry points (import *, FlowAgent+TestHost turn, create_agent,
+# wrap_agent). See tests/test_packaging_metadata.py, which pins the floors so
+# they cannot silently rot, and the notes on each line:
+#
+#   langgraph            0.5.0 and older lack create_react_agent(prompt=...)
+#                        (0.2.x/0.4.x) or break on langchain-core 1.x (0.5.x).
+#                        0.6.0 is the oldest release that passes.
+#   langgraph-prebuilt   declared explicitly because the code imports
+#                        `langgraph.prebuilt` directly. 1.0.9 .. 1.0.13 import
+#                        `langgraph.runtime.ExecutionInfo`, which only landed in
+#                        langgraph 1.2 — yet langgraph 1.0.x/1.1.x pin
+#                        `langgraph-prebuilt<1.1.0,>=1.0.8`, so a plain
+#                        `pip install langgraph==1.1.0` resolves to a
+#                        combination that cannot import. Excluding that window
+#                        makes langgraph 1.0/1.1 resolve to prebuilt 1.0.8,
+#                        which works.
+#   langchain-core       0.3.0 is not co-installable with langgraph 0.6
+#                        (langgraph-prebuilt 0.6.5 requires >=0.3.67).
+#   pydantic             langchain-core 0.3.67 requires >=2.7.4.
+dependencies = [
+  "pydantic>=2.7.4",
+  "pyyaml>=6.0",
+  # Capped at <2.0 on purpose: we import langgraph.prebuilt.create_react_agent,
+  # which LangGraph deprecated in 1.0 and REMOVES in 2.0 (it moves to
+  # langchain.agents.create_agent). Without the cap, `pip install aigenos-flow`
+  # breaks the day 2.0 ships. Relax it in a patch release once the import moves.
+  "langgraph>=0.6.0,<2.0",
+  "langgraph-prebuilt>=0.6.0,<2.0,!=1.0.9,!=1.0.10,!=1.0.11,!=1.0.12,!=1.0.13",
+  "langchain-core>=0.3.67",
+]
+
+[project.optional-dependencies]
+# The FastAPI widget server (AG-UI/A2UI/MCP-UI adapters + AI widget generation).
+#
+# This extra is self-sufficient on purpose: the chat routes need a LangChain
+# chat model, so a provider ships with the server. `langchain-anthropic` serves
+# ANTHROPIC_API_KEY (and pairs with the raw `anthropic` SDK the widget
+# generator uses); `langchain-ollama` serves the no-API-key local default.
+# For OpenAI or Gemini add that provider's extra — without it the chat routes
+# answer 503 naming the extra to install, never a 500.
+server = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sse-starlette>=2.1",
+  "httpx>=0.27",
+  "anthropic>=0.92",
+  "langchain-anthropic>=0.3",
+  "langchain-ollama>=0.2",
+]
+# Database-backed tools (aigenos_flow.integrations.databases).
+mongodb = ["pymongo>=4.6"]
+redis   = ["redis>=5.0"]
+# LLM providers for the flow interpreter (pick one).
+anthropic = ["langchain-anthropic>=0.3"]
+openai    = ["langchain-openai>=0.3"]
+gemini    = ["langchain-google-genai>=2.0"]
+ollama    = ["langchain-ollama>=0.2"]
+# UI-managed PostgreSQL and MongoDB operations. Drivers stay optional so the
+# deterministic engine can still be embedded without database dependencies.
+connectors = [
+  "psycopg[binary,pool]>=3.2",
+  "pymongo[srv]>=4.10",
+  "cryptography>=43",
+  "sqlparse>=0.5",
+]
+# Everything a full local Studio needs: server + all four LLM providers +
+# managed connectors + the database tool drivers.
+all = [
+  "aigenos-flow[server]",
+  "aigenos-flow[anthropic]",
+  "aigenos-flow[openai]",
+  "aigenos-flow[gemini]",
+  "aigenos-flow[ollama]",
+  "aigenos-flow[connectors]",
+  "aigenos-flow[mongodb]",
+  "aigenos-flow[redis]",
+]
+dev = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23",
+  "httpx>=0.27",
+  "ruff>=0.7",
+  "mypy>=1.10",
+]
+
+[project.scripts]
+# Binds 127.0.0.1 by default and refuses a public bind while the
+# skill-management surface is ungated (see aigenos_flow.main.check_bind).
+aigenos-flow-server = "aigenos_flow._server_entry:main"
+
+[project.urls]
+Homepage = "https://aigenos.io"
+Repository = "https://github.com/aigenos/flow"
+Issues = "https://github.com/aigenos/flow/issues"
+Documentation = "https://aigenos.io"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# Ships both the server package and the nested `aigenos_flow.flow` engine.
+packages = ["aigenos_flow"]
+# Local state written by a running server — never ship a user's history
+# (Studio workspace) or connector configuration.
+exclude = ["aigenos_flow/data/studio.db*", "aigenos_flow/data/connectors.sqlite3*"]
+
+[tool.hatch.build.targets.sdist]
+# `only-include` states exactly what an sdist of this package is: the package,
+# its tests, and the three files a build needs. `ignore-vcs` keeps the contents
+# independent of whatever the surrounding monorepo's ignore file happens to say.
+#
+# NOTE: hatchling always force-includes the VCS ignore file it found into the
+# sdist, as its basename, and neither `exclude` nor `ignore-vcs` suppresses that
+# (hatchling/builders/sdist.py, get_default_build_data). It locates that file by
+# walking UP from this directory, so without a local one it shipped the monorepo
+# root's .gitignore, which is no part of this package. backend/.gitignore exists
+# to stop that walk here; do not delete it.
+ignore-vcs = true
+only-include = ["aigenos_flow", "tests", "README.md", "LICENSE", "NOTICE", "pyproject.toml"]
+exclude = [
+  ".gitignore",
+  ".env*",
+  "**/__pycache__",
+  "aigenos_flow/data/studio.db*",
+  "aigenos_flow/data/connectors.sqlite3*",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

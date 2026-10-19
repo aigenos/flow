@@ -1,0 +1,73 @@
+# Frontend Dockerfile — React app built once, served by nginx
+#
+# Build:
+#   docker build -f Dockerfile.frontend -t aigenos/flows-frontend:latest .
+#
+# Run (proxy /api to your backend):
+#   docker run -p 5173:8080 \
+#     -e VITE_API_BASE=http://backend:8000 \
+#     aigenos/flows-frontend:latest
+
+# ---------- Stage 1: build ----------
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Cache layer for deps
+COPY frontend/package.json frontend/package-lock.json* ./frontend/
+WORKDIR /build/frontend
+RUN npm ci
+
+# Build. The in-app docs viewer inlines ../docs/*.md at build time, so the
+# markdown has to sit beside frontend/ or every /docs page is empty.
+COPY docs/*.md /build/docs/
+COPY frontend/ ./
+RUN npm run build
+
+# ---------- Stage 2: serve ----------
+FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+
+# nginx-unprivileged runs as UID 101 by default — OpenShift SCC compatible.
+# Listen on 8080 (non-privileged port) per nginx-unprivileged convention.
+
+COPY --from=builder /build/frontend/dist /usr/share/nginx/html
+
+# Single-page-app nginx config: serve static, proxy /api/*, fall back to index.html
+COPY <<'EOF' /etc/nginx/conf.d/default.conf
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # SSE needs these to not buffer
+    proxy_buffering off;
+    proxy_read_timeout 600s;
+
+    # /api/* → backend service
+    # In docker-compose this resolves to the `backend` service name; in k8s
+    # it's whatever Service you create. Override BACKEND_URL at build time
+    # via a small entrypoint script if you need it dynamic at runtime.
+    location /api/ {
+        proxy_pass http://backend:8000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+EXPOSE 8080
+
+USER 101
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget -qO- http://localhost:8080/ > /dev/null || exit 1
+
+# nginx-unprivileged default CMD already starts the server

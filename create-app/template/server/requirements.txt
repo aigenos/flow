@@ -1,0 +1,23 @@
+# The deterministic flow engine + widget server.
+#
+# Pinned to the release this scaffold was generated from. 0.4 is allowed to
+# change the SKILL.md contract, so the upper bound is deliberate — bump it when
+# you migrate, not by accident.
+#
+# To develop against an unreleased checkout instead, swap this line for one of:
+#   • local checkout:  pip install -e "/path/to/flow/backend[server]"
+#   • from git:        aigenos-flow[server] @ git+https://github.com/aigenos/flow.git#subdirectory=backend
+aigenos-flow[server]>=0.3.1,<0.4
+
+uvicorn[standard]>=0.30
+python-dotenv>=1.0
+
+# Pick the provider(s) you actually use — delete the rest to slim installs.
+langchain-google-genai>=2.0
+langchain-openai>=0.2
+langchain-anthropic>=0.2
+langchain-ollama>=0.2
+
+# Tests (httpx is what fastapi.testclient runs on).
+pytest>=8.0
+httpx>=0.27

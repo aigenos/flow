@@ -1,0 +1,68 @@
+{
+  "id": "subscription_grid",
+  "version": "1.0.0",
+  "description": "Single-select grid of a user's streaming subscriptions. Referenced from subscription-insights/SKILL.md and the Gallery's subscription-help \u2014 always renders the same way.",
+  "bindings": [
+    "rows"
+  ],
+  "submit_schema": {
+    "properties": {
+      "subscription_id": {
+        "type": "string"
+      },
+      "subscription_name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "subscription_id"
+    ],
+    "type": "object"
+  },
+  "spec": {
+    "type": "card",
+    "props": {
+      "subtitle": "Select one to see its details",
+      "title": "Your subscriptions"
+    },
+    "children": [
+      {
+        "type": "form",
+        "props": {
+          "submitLabel": "Show details"
+        },
+        "children": [
+          {
+            "type": "datatable",
+            "props": {
+              "columns": [
+                {
+                  "key": "service",
+                  "label": "Service"
+                },
+                {
+                  "key": "plan",
+                  "label": "Plan"
+                },
+                {
+                  "key": "monthly_price",
+                  "label": "Monthly"
+                },
+                {
+                  "key": "status",
+                  "label": "Status"
+                }
+              ],
+              "fields": {
+                "subscription_id": "id",
+                "subscription_name": "service"
+              },
+              "rows": "{{rows}}"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "aigenos-agentic-app",
+  "version": "0.3.1",
+  "description": "Scaffold a deterministic agentic app — chat UI, typed widgets generated from your field schema, structural gates, and an aigenos/flow backend — with one command.",
+  "bin": {
+    "aigenos-agentic-app": "index.js"
+  },
+  "type": "commonjs",
+  "files": [
+    "index.js",
+    "LICENSE",
+    "NOTICE",
+    "template",
+    "!template/**/__pycache__",
+    "!template/**/*.pyc",
+    "!template/**/*.pyo"
+  ],
+  "scripts": {
+    "check": "node scripts/check-package.mjs",
+    "prepublishOnly": "node scripts/check-package.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "aigenos",
+    "flow",
+    "agentic",
+    "deterministic",
+    "agent",
+    "workflow",
+    "scaffold",
+    "create-app",
+    "langgraph"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/aigenos/flow",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aigenos/flow.git",
+    "directory": "create-app"
+  },
+  "bugs": "https://github.com/aigenos/flow/issues"
+}

@@ -1,0 +1,63 @@
+id: refund_flow
+description: A three-step refund workflow showcasing widget rendering.
+start: greet
+
+nodes:
+  - id: greet
+    type: message
+    text: "Hi! I can help you process a refund. Let's start by finding your order."
+    next: ask_order
+
+  - id: ask_order
+    type: widget
+    widget: order_id_input
+    save_to: order_form
+    next: lookup_order
+
+  - id: lookup_order
+    type: tool_call
+    tool: orders.fetch
+    args:
+      id: "{{order_form.order_id}}"
+    save_to: lookup
+    next: show_order
+
+  - id: show_order
+    type: widget
+    widget: order_summary
+    props:
+      order_id: "{{order_form.order_id}}"
+      customer: "Jane Doe"
+      total: "129.00"
+      items: "1x Wireless Earbuds, 1x Charging Case"
+    save_to: order_action
+    next: confirm_refund
+
+  - id: confirm_refund
+    type: widget
+    widget: refund_confirm
+    props:
+      order_id: "{{order_form.order_id}}"
+      total: "129.00"
+    save_to: confirmation
+    next: route_after_confirm
+
+  - id: route_after_confirm
+    type: branch
+    branches:
+      - if: "confirmation['confirmed'] == True"
+        next: done_refunded
+      - next: done_cancelled
+
+  - id: done_refunded
+    type: message
+    text: "Done — your refund of $129.00 has been initiated. You'll see it on your statement in 3–5 business days."
+    next: end
+
+  - id: done_cancelled
+    type: message
+    text: "No problem — refund cancelled. Is there anything else I can help with?"
+    next: end
+
+  - id: end
+    type: end

@@ -1,0 +1,60 @@
+{
+  "id": "subscription_details",
+  "version": "1.0.0",
+  "description": "Composed detail view: highlights card + billing grid + event timeline. Referenced from subscription-insights/SKILL.md; every run renders this exact layout.",
+  "bindings": ["service", "plan", "status", "monthly_price", "pending_due", "next_billing", "member_since", "billing", "events"],
+  "submit_schema": {
+    "type": "object",
+    "properties": { "details_viewed": { "type": "boolean" } },
+    "required": ["details_viewed"]
+  },
+  "spec": {
+    "type": "card",
+    "props": { "title": "{{service}}", "subtitle": "{{plan}} plan" },
+    "children": [
+      {
+        "type": "row",
+        "props": { "justify": "start", "gap": "sm" },
+        "children": [
+          { "type": "badge", "props": { "label": "{{status}}" } },
+          { "type": "badge", "props": { "label": "{{monthly_price}} / month" } },
+          { "type": "badge", "props": { "label": "member since {{member_since}}" } }
+        ]
+      },
+      {
+        "type": "alert",
+        "props": { "tone": "warning", "message": "Pending due: {{pending_due}} — next billing {{next_billing}}" }
+      },
+      { "type": "divider" },
+      {
+        "type": "text",
+        "props": { "value": "Billing history", "weight": "bold", "style": { "size": 13, "transform": "uppercase", "spacing": 1 } }
+      },
+      {
+        "type": "datatable",
+        "props": {
+          "rows": "{{billing}}",
+          "columns": [
+            { "key": "date", "label": "Date" },
+            { "key": "amount", "label": "Amount" },
+            { "key": "status", "label": "Status" }
+          ],
+          "fields": {}
+        }
+      },
+      { "type": "divider" },
+      {
+        "type": "text",
+        "props": { "value": "Account events", "weight": "bold", "style": { "size": 13, "transform": "uppercase", "spacing": 1 } }
+      },
+      { "type": "timeline", "props": { "events": "{{events}}" } },
+      {
+        "type": "form",
+        "props": { "submitLabel": "Ask about this subscription" },
+        "children": [
+          { "type": "input", "props": { "name": "details_viewed", "type": "hidden", "defaultValue": "true", "label": "" } }
+        ]
+      }
+    ]
+  }
+}

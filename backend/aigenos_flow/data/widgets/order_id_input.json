@@ -1,0 +1,39 @@
+{
+  "id": "order_id_input",
+  "version": "1.0.0",
+  "description": "Asks the user for an order ID.",
+  "bindings": [],
+  "submit_schema": {},
+  "spec": {
+    "type": "card",
+    "props": {
+      "title": "Urgency",
+      "subtitle": "Select urgency as lower, higer, critical",
+      "tone": "info",
+      "style": {
+        "font": "sans",
+        "color": "#fbbf24"
+      }
+    },
+    "children": [
+      {
+        "type": "form",
+        "props": {
+          "submitLabel": "Continue"
+        },
+        "children": [
+          {
+            "type": "input",
+            "props": {
+              "name": "order_id",
+              "label": "Order ID",
+              "placeholder": "e.g. ORD-1024",
+              "required": true
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

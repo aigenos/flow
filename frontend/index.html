@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/aigenos-icon-light.png?v=2" />
+    <link rel="icon" type="image/png" sizes="32x32" media="(prefers-color-scheme: dark)" href="/aigenos-icon-dark.png?v=2" />
+    <link rel="apple-touch-icon" href="/aigenos-icon-light.png?v=2" />
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <title>aigenos flow — deterministic AI agent workflows</title>
+    <meta name="description" content="Open-source framework for deterministic AI agents: the LLM fills typed fields, your program owns the flow. One SKILL.md defines the workflow, its policy gates, and the chat widgets it renders (AG-UI, A2UI, MCP-UI) — plus a visual Studio. Apache-2.0." />
+    <link rel="canonical" href="https://aigenos.io/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="aigenos" />
+    <meta property="og:title" content="aigenos flow — deterministic AI agent workflows" />
+    <meta property="og:description" content="The LLM fills fields. Your program does everything else. Typed workflows in one SKILL.md, structural policy gates, auto-generated chat widgets, and a visual Studio — open source, Apache-2.0." />
+    <meta property="og:url" content="https://aigenos.io/" />
+    <meta property="og:image" content="https://aigenos.io/shots/canvas-dark.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="aigenos flow — deterministic AI agent workflows" />
+    <meta name="twitter:description" content="The LLM fills fields. Your program does everything else. Open-source deterministic agent workflows with auto-generated chat widgets." />
+    <meta name="twitter:image" content="https://aigenos.io/shots/canvas-dark.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "aigenos flow",
+        "url": "https://aigenos.io/",
+        "description": "Open-source framework for deterministic AI agent workflows: typed fields, structural policy gates, replayed flows, and auto-generated chat widgets.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Cross-platform",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "sameAs": ["https://github.com/aigenos/flow"]
+      }
+    </script>
+    <script>
+      // Apply theme before paint to avoid FOUC. ?theme=light|dark deep-links a
+      // theme (docs screenshots, demos) and persists it like the toggle would.
+      (function () {
+        try {
+          var forced = new URLSearchParams(window.location.search).get("theme");
+          if (forced === "light" || forced === "dark") {
+            localStorage.setItem("aigenos-flow-theme", forced);
+          }
+          // Light is the product default; dark is opt-in via the toggle.
+          var theme = localStorage.getItem("aigenos-flow-theme") || "light";
+          if (theme === "dark") document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-bg text-text-primary antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

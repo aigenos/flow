@@ -1,0 +1,41 @@
+{
+  "id": "order_summary",
+  "version": "1.0.0",
+  "description": "Shows order details with a Continue button.",
+  "bindings": ["order_id", "customer", "total", "items"],
+  "submit_schema": {
+    "type": "object",
+    "properties": { "action": { "type": "string" } }
+  },
+  "spec": {
+    "type": "card",
+    "props": { "title": "Order {{order_id}}", "subtitle": "{{customer}}", "tone": "info" },
+    "children": [
+      {
+        "type": "row",
+        "props": { "justify": "between" },
+        "children": [
+          { "type": "text", "props": { "value": "Total", "muted": true } },
+          { "type": "text", "props": { "value": "${{total}}", "weight": "bold" } }
+        ]
+      },
+      { "type": "divider" },
+      { "type": "text", "props": { "value": "{{items}}", "muted": true } },
+      {
+        "type": "row",
+        "props": { "justify": "end", "gap": "sm" },
+        "children": [
+          {
+            "type": "button",
+            "props": {
+              "label": "Refund this order",
+              "variant": "primary",
+              "action": "submit",
+              "payload": { "action": "refund" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

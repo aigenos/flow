@@ -1,0 +1,77 @@
+# Backend Dockerfile — aigenos-flow (server + bundled flow engine)
+#
+# Multi-stage so the final image doesn't carry pip caches or build deps.
+# Runs as non-root UID 1001 for OpenShift SCC compatibility.
+#
+# Build:
+#   docker build -f Dockerfile.backend -t aigenos/flows-backend:latest .
+#
+# Run:
+#   docker run -p 8000:8000 \
+#     -e FG_MODEL=qwen3:8b \
+#     -e FG_TRACKER_STORE_URL=redis://redis:6379 \
+#     -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+#     -v $(pwd)/skills:/app/skills \
+#     aigenos/flows-backend:latest
+
+# ---------- Stage 1: builder ----------
+FROM python:3.12-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+
+# System deps for building wheels (psycopg, etc.)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package source (single package now — engine lives in aigenos_flow/flow)
+COPY backend/ ./backend/
+
+# Install into a target dir we'll copy into the final stage
+RUN pip install --target=/install \
+    "./backend[server,ollama,connectors]" \
+    "redis>=5.0"
+
+# ---------- Stage 2: runtime ----------
+FROM python:3.12-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/install \
+    PATH=/install/bin:$PATH
+
+# Create non-root user (UID 1001 satisfies OpenShift SCC)
+RUN groupadd -r -g 1001 aigenos && \
+    useradd -r -u 1001 -g aigenos -d /app -s /sbin/nologin aigenos
+
+WORKDIR /app
+
+# Copy site-packages from builder
+COPY --from=builder /install /install
+
+# Default skills directory — mount your own at /app/skills to override.
+# Ship a placeholder so the container boots cleanly even without a mount.
+COPY --chown=aigenos:aigenos examples/studio_agent/skills/ /app/skills/
+# book-meeting-room and list-rooms import `shared.rooms` from the folder above
+# the skills dir (/app here); without it both fail to load.
+COPY --chown=aigenos:aigenos examples/studio_agent/shared/ /app/shared/
+RUN mkdir -p /app/data && chown -R aigenos:aigenos /app/data
+
+USER 1001
+
+ENV FG_SKILLS_DIR=/app/skills \
+    FG_CONNECTOR_STORE_PATH=/app/data/connectors.sqlite3 \
+    PORT=8000
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()" || exit 1
+
+CMD ["python", "-m", "uvicorn", "aigenos_flow.main:app", "--host", "0.0.0.0", "--port", "8000"]

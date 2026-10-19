@@ -1,0 +1,116 @@
+:root {
+  --cyan: #3fe0d0;
+  --cyan-deep: #1f9a93;
+  --ink: #e9f1f2;
+  --mut: #8fa0a6;
+  --glass: rgba(255, 255, 255, 0.055);
+  --glass-2: rgba(255, 255, 255, 0.09);
+  --stroke: rgba(255, 255, 255, 0.14);
+  --stroke-soft: rgba(255, 255, 255, 0.08);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif;
+  background:
+    radial-gradient(1100px 600px at 12% -10%, rgba(63, 224, 208, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(90, 120, 255, 0.14), transparent 55%),
+    linear-gradient(160deg, #070b0e 0%, #0a141a 45%, #0a1116 100%);
+  min-height: 100vh;
+}
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.app { max-width: 760px; margin: 0 auto; padding: 22px 16px 40px; }
+
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 16px; border-radius: 16px; margin-bottom: 18px;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.logo-dot {
+  width: 24px; height: 24px; border-radius: 8px;
+  background: conic-gradient(from 200deg, var(--cyan), var(--cyan-deep), #5a78ff, var(--cyan));
+}
+.tabs { display: flex; gap: 6px; margin-left: auto; }
+.tabs button {
+  background: transparent; border: 1px solid transparent; color: var(--mut);
+  padding: 7px 14px; border-radius: 10px; cursor: pointer; font-size: 14px;
+}
+.tabs button.on { color: var(--ink); background: var(--glass-2); border-color: var(--stroke-soft); }
+.badge { font-size: 12px; color: var(--cyan); border: 1px solid rgba(63, 224, 208, 0.3); border-radius: 999px; padding: 5px 11px; }
+.banner { border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: var(--mut); border-color: rgba(255, 180, 84, 0.4); }
+.banner code { margin: 0 4px; }
+.banner ul { margin: 6px 0 0; padding-left: 20px; }
+.banner li { margin: 3px 0; }
+
+/* chat */
+.messages { display: flex; flex-direction: column; gap: 10px; min-height: 50vh; padding: 6px 2px 16px; }
+.bubble { max-width: 78%; padding: 10px 13px; border-radius: 14px; font-size: 14.5px; line-height: 1.45; }
+.bubble.bot { background: var(--glass-2); border: 1px solid var(--stroke-soft); align-self: flex-start; }
+.bubble.user { background: linear-gradient(180deg, rgba(63, 224, 208, 0.92), var(--cyan-deep)); color: #04201d; align-self: flex-end; }
+.bubble.typing { color: var(--mut); }
+
+.widget { align-self: flex-start; width: 300px; max-width: 86%; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.widget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--mut); }
+.gate-note { font-size: 11px; color: var(--cyan); margin-top: 2px; }
+
+.composer { display: flex; gap: 8px; padding: 8px; border-radius: 14px; margin-top: 8px; }
+.composer input { flex: 1; }
+
+input, select {
+  background: rgba(0, 0, 0, 0.28); border: 1px solid var(--stroke-soft);
+  color: var(--ink); border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none;
+}
+input:focus, select:focus { border-color: rgba(63, 224, 208, 0.5); }
+select option { color: #04201d; }
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--cyan), var(--cyan-deep)); color: #04201d;
+  font-weight: 600; border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer; font-size: 14px;
+}
+.btn-primary:disabled { opacity: 0.5; cursor: default; }
+
+/* flow view (read-only outline of server/skills/) */
+.flowview { display: grid; grid-template-columns: 1fr 260px; gap: 16px; align-items: start; }
+.flow-canvas { border-radius: 16px; padding: 22px; }
+.skill-outline + .skill-outline { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--stroke); }
+.canvas-head { font-size: 11px; text-transform: uppercase; letter-spacing: 1.3px; color: var(--mut); margin-bottom: 16px; }
+.node { background: var(--glass-2); border: 1px solid var(--stroke); border-radius: 13px; padding: 12px 14px; }
+.node-ttl { overflow-wrap: anywhere; }
+.node.gate { border-color: rgba(63, 224, 208, 0.5); box-shadow: 0 0 0 1px rgba(63, 224, 208, 0.22); }
+.node-lab { font-size: 10.5px; color: var(--mut); letter-spacing: 0.4px; display: flex; align-items: center; gap: 8px; }
+.node-ttl { font-size: 14.5px; font-weight: 600; margin-top: 3px; }
+.node-meta { font-size: 12px; color: var(--mut); margin-top: 5px; }
+.tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(63, 224, 208, 0.16); color: var(--cyan); }
+.conn { width: 2px; height: 18px; margin: 6px auto; background: linear-gradient(var(--cyan), transparent); opacity: 0.6; }
+.flow-note { border-radius: 16px; padding: 16px; }
+.flow-note h3 { margin: 0 0 8px; font-size: 15px; }
+.flow-note p { font-size: 13px; color: var(--ink); line-height: 1.5; margin: 0 0 8px; }
+.flow-note .dim { color: var(--mut); }
+code { background: rgba(0, 0, 0, 0.3); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+@media (max-width: 640px) { .flowview { grid-template-columns: 1fr; } }
+
+/* Voice input — dictates into the message box; never sends. */
+.btn-mic {
+  border: 1px solid var(--border, #d0d7de);
+  background: transparent;
+  border-radius: 10px;
+  padding: 0 12px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.btn-mic.listening { border-color: var(--brand, #0f766e); animation: mic-pulse 1.1s ease-in-out infinite; }
+.btn-mic:disabled { opacity: 0.5; cursor: not-allowed; }
+@keyframes mic-pulse { 50% { opacity: 0.45; } }
+
+/* what a yes will run: shown on the confirmation, straight from the engine */
+.runs { margin: 8px 0 10px; padding: 10px 12px; border: 1px solid var(--stroke); border-radius: 10px; font-size: 13px; }
+.runs-head { margin-bottom: 6px; }
+.runs-row { display: flex; justify-content: space-between; gap: 16px; padding: 2px 0; }
+.runs-row span:first-child { opacity: 0.65; }

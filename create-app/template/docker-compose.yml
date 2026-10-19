@@ -1,0 +1,92 @@
+# One-command run for anyone with Docker Desktop — no Python or Node needed.
+#
+#   docker compose up                    # server + web (needs one API key in .env)
+#   docker compose --profile ollama up   # also runs a local model (zero API key)
+#
+# Compose auto-loads a sibling .env for ${VAR} substitution; a missing .env is
+# fine (keys resolve empty → the app boots and the UI says which key to add).
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "8000:8000"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      FG_PROVIDER: ${FG_PROVIDER:-}
+      # Left EMPTY on purpose. FG_MODEL overrides the model for whichever
+      # provider your key selects, so hardcoding an Ollama model name here used
+      # to ask Gemini/OpenAI/Anthropic for "qwen3:8b" and get a hard rejection.
+      # The local model name lives in FG_OLLAMA_MODEL below instead.
+      FG_MODEL: ${FG_MODEL:-}
+      FG_OLLAMA_MODEL: ${FG_OLLAMA_MODEL:-qwen3:8b}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+    volumes:
+      # Edit skills on the host; the server picks them up on reload.
+      - ./server/skills:/app/server/skills
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health').read()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "5173:8080"
+    depends_on:
+      - server
+
+  # Optional local model so chat works with no API key:
+  #   docker compose --profile ollama up
+  #
+  # The image ships no models, so serving is not enough — the entrypoint pulls
+  # FG_OLLAMA_MODEL once into the named volume, then keeps serving. The first
+  # run therefore downloads several GB and chat is unavailable until it lands;
+  # the server reports exactly that (GET /api/health) and the UI shows it.
+  # Already-pulled models are a no-op on later runs.
+  #
+  # If you would rather control the download yourself, drop the entrypoint and
+  # run:  docker compose exec ollama ollama pull qwen3:8b
+  ollama:
+    profiles: ["ollama"]
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      FG_OLLAMA_MODEL: ${FG_OLLAMA_MODEL:-qwen3:8b}
+    # No `set -e`: a failed pull (offline, typo'd model) must NOT kill the
+    # container, or restart:unless-stopped turns it into a crash loop. Keep
+    # serving, report it, and let the user retry the pull by hand.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        ollama serve &
+        until ollama list >/dev/null 2>&1; do sleep 1; done
+        echo "pulling ${FG_OLLAMA_MODEL:-qwen3:8b} (first run only, several GB)..."
+        ollama pull "${FG_OLLAMA_MODEL:-qwen3:8b}" \
+          || echo "PULL FAILED. Chat stays unavailable until you run: docker compose exec ollama ollama pull ${FG_OLLAMA_MODEL:-qwen3:8b}"
+        ollama list
+        wait
+    # `ollama list` always prints a header row, so the model rows are line 2+ —
+    # healthy means "a model is actually installed", not "the daemon answered".
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list | tail -n +2 | grep -q . || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 600s
+      retries: 60
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:

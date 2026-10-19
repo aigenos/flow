@@ -1,0 +1,14 @@
+{
+  "name": "__APP_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A deterministic agentic app built on aigenos/flow — chat, typed widgets generated from the field schema, and structural gates.",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:docker": "docker compose up",
+    "dev:server": "node scripts/py.mjs -m uvicorn app:app --app-dir server --reload --port 8000",
+    "dev:web": "npm --prefix web run dev",
+    "setup": "npm --prefix web install",
+    "test": "node scripts/py.mjs -m pytest tests -q"
+  }
+}

@@ -1,0 +1,29 @@
+# Frontend image: Vite build served by nginx, proxying /api to the server.
+# ---------- build ----------
+FROM node:20-alpine AS build
+WORKDIR /build
+COPY web/package.json web/package-lock.json* ./
+RUN npm install
+COPY web/ ./
+RUN npm run build
+
+# ---------- serve ----------
+FROM nginxinc/nginx-unprivileged:1.27-alpine
+COPY --from=build /build/dist /usr/share/nginx/html
+COPY <<'EOF' /etc/nginx/conf.d/default.conf
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/ {
+        proxy_pass http://server:8000/api/;
+        proxy_buffering off;
+        proxy_read_timeout 600s;
+    }
+    location / {
+        try_files $uri /index.html;
+    }
+}
+EOF

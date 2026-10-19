@@ -1,0 +1,48 @@
+{
+  "id": "refund_confirm",
+  "version": "1.0.0",
+  "description": "Yes/No confirmation for the refund action.",
+  "bindings": ["order_id", "total"],
+  "submit_schema": {
+    "type": "object",
+    "properties": { "confirmed": { "type": "boolean" } },
+    "required": ["confirmed"]
+  },
+  "spec": {
+    "type": "card",
+    "props": { "title": "Confirm refund", "tone": "warning" },
+    "children": [
+      {
+        "type": "alert",
+        "props": {
+          "tone": "warning",
+          "message": "This will refund ${{total}} for order {{order_id}}. This action cannot be undone."
+        }
+      },
+      {
+        "type": "row",
+        "props": { "justify": "end", "gap": "sm" },
+        "children": [
+          {
+            "type": "button",
+            "props": {
+              "label": "Cancel",
+              "variant": "ghost",
+              "action": "submit",
+              "payload": { "confirmed": false }
+            }
+          },
+          {
+            "type": "button",
+            "props": {
+              "label": "Yes, refund",
+              "variant": "danger",
+              "action": "submit",
+              "payload": { "confirmed": true }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

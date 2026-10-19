@@ -1,0 +1,30 @@
+# Build and test artifacts for the aigenos-flow Python package.
+#
+# This file is also what the published sdist ships as its .gitignore:
+# hatchling walks up from the project root looking for a VCS ignore file, uses
+# it for the sdist's default exclusions and then force-includes it in the
+# archive (hatchling/builders/sdist.py get_default_build_data). Without a local
+# one, the monorepo's root .gitignore ended up inside aigenos_flow-*.tar.gz,
+# which is not part of this package.
+
+# Build output
+dist/
+build/
+*.egg-info/
+
+# Caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local state a running server writes — never committed, never published.
+# ANCHORED (/data/): an unanchored `data/` also swallows aigenos_flow/data/, the
+# shipped widget catalog, so a newly designed widget was silently never committed.
+/data/
+aigenos_flow/data/skills/
+aigenos_flow/data/studio.db
+aigenos_flow/data/studio.db-*
+aigenos_flow/data/connectors.sqlite3
+aigenos_flow/data/connectors.sqlite3-*

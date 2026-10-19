@@ -1,0 +1,107 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# npm pack output. A committed tarball is stale the moment the version bumps
+# and invites `npm i ./aigenos-flow-<old>.tgz`; publish regenerates it.
+*.tgz
+
+# Demo recording intermediates — 100MB+ of regeneratable frames; never publish
+/demo/shots/
+
+# Local recording scripts and their large intermediates. The runnable proofs
+# live in examples/.
+# ANCHORED (/): an unanchored `demo/` also swallows docs/media/demo/, which is
+# the README's hero GIF.
+/demo/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Runs / benchmarks / logs
+runs.json
+*.log
+
+# Studio workspace database (SQLite — local revision history, never shared).
+# UNANCHORED (**/): it is created relative to the CWD, and the documented
+# commands are run from several directories, not just the repo root.
+**/studio.db
+**/studio.db-wal
+**/studio.db-shm
+
+# Managed-connector store (SQLite — created on server start, holds encrypted
+# credential references; never shared). Unanchored, because the server writes it
+# next to whatever FG_DATA_DIR points at, not only at the repo root.
+**/data/connectors.sqlite3
+**/data/connectors.sqlite3-wal
+**/data/connectors.sqlite3-shm
+
+# Claude
+.claude/
+
+# examples/studio_agent/skills is the agent the Studio opens in a clone, so
+# skills created in the Studio are written there too. Anything not named below
+# is that local work and is not committed.
+# Every skill the docs or tests reference MUST be negated here, or it will not
+# survive a clone.
+examples/studio_agent/skills/*
+!examples/studio_agent/skills/book-meeting-room/
+!examples/studio_agent/skills/list-rooms/
+!examples/studio_agent/skills/plan-team-offsite/
+!examples/studio_agent/skills/refund-desk/
+!examples/studio_agent/skills/conference-trip/
+!examples/studio_agent/skills/send-money/
+!examples/studio_agent/skills/add-payee/
+!examples/studio_agent/skills/pay-someone/
+!examples/studio_agent/skills/tools/
+!examples/studio_agent/skills/.gitkeep
+
+# Live local databases — written by the running backend, never source.
+backend/data/connectors.sqlite3*
+
+# The website build: not part of the project.
+/site/
+/aigenos-site.zip
+/aigenos-site/
+
+# Scratch skills folder. The demo skills live in examples/studio_agent/skills
+# (what the server and docker-compose load);
+# this one is local working space for Studio-generated skills.
+/skills/
+
+# Local notes.
+/docs/launch/
+/docs/internal/
+/release/
+/architecture-review.html
+/aigenos_flow_arch_review.md
+
+# What the built-in `save_request` tool writes next to a skill when a flow runs.
+records.jsonl

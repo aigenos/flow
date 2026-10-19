@@ -1,0 +1,36 @@
+{
+  "id": "client_picker",
+  "version": "1.0.0",
+  "description": "Autosuggest form to pick a client from the search matches.",
+  "bindings": ["options"],
+  "submit_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": { "type": "string" },
+      "client_full_name": { "type": "string" }
+    },
+    "required": ["client_id", "client_full_name"]
+  },
+  "spec": {
+    "type": "card",
+    "props": { "title": "Select a client", "subtitle": "Start typing to filter the matches" },
+    "children": [
+      {
+        "type": "form",
+        "props": { "submitLabel": "Use this client" },
+        "children": [
+          {
+            "type": "autosuggest",
+            "props": {
+              "label": "Client",
+              "placeholder": "Type a name…",
+              "display": "full_name",
+              "options": "{{options}}",
+              "fields": { "client_id": "id", "client_full_name": "full_name" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

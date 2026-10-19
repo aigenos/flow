@@ -1,0 +1,230 @@
+/* aigenos/flow — self-contained styles for the published component library.
+ *
+ * Design goal: plug-and-play. This file is auto-injected when you import any
+ * component, so consumers need ZERO config. Crucially it does NOT include
+ * Tailwind's `base`/preflight layer, so it never resets or overrides the host
+ * app's global styles — it only ships the utility + component classes our own
+ * components use, plus the theme tokens they read.
+ *
+ * Theme: light by default; add `class="dark"` to <html> to switch (or use the
+ * exported `useTheme` hook).
+ */
+
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Theme tokens (CSS variables) ----------
+   Defined on :root so the utilities below resolve. These are namespaced enough
+   not to collide with a host app's own variables, and defining them has no
+   visual effect until a component actually uses one. */
+
+:root {
+  --bg-base: 250 249 247;
+  --bg-surface: 255 255 255;
+  --bg-elevated: 255 255 255;
+  --bg-muted: 243 241 237;
+
+  --border-subtle: 28 26 23 / 0.07;
+  --border-default: 28 26 23 / 0.12;
+  --border-strong: 28 26 23 / 0.20;
+
+  --text-primary: 28 26 23;
+  --text-secondary: 90 85 78;
+  --text-muted: 138 131 121;
+
+  --brand: 23 128 138;
+  --brand-hover: 17 104 112;
+  --brand-subtle: 23 128 138 / 0.09;
+  --brand-ring: 23 128 138 / 0.32;
+  /* Readable text ON a --brand fill. Without this the primary button of every
+     auto-generated widget inherits the host app's body colour. */
+  --on-brand: 255 255 255;
+
+  --accent: 23 128 138;        /* alias of --brand; no second hue */
+  --accent-hover: 17 104 112;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --shadow-glow: 0 1px 2px rgb(28 26 23 / 0.07), 0 8px 22px -10px rgb(28 26 23 / 0.20);
+  --shadow-card: 0 1px 2px rgb(28 26 23 / 0.05), 0 10px 28px -16px rgb(28 26 23 / 0.16);
+}
+
+html.dark {
+  --bg-base: 24 23 21;
+  --bg-surface: 31 30 27;
+  --bg-elevated: 38 36 33;
+  --bg-muted: 46 44 40;
+
+  --border-subtle: 255 252 246 / 0.08;
+  --border-default: 255 252 246 / 0.13;
+  --border-strong: 255 252 246 / 0.22;
+
+  --text-primary: 245 243 239;
+  --text-secondary: 178 172 163;
+  --text-muted: 133 127 118;
+
+  --brand: 92 190 197;
+  --brand-hover: 132 214 219;
+  --brand-subtle: 92 190 197 / 0.14;
+  --brand-ring: 92 190 197 / 0.40;
+  --on-brand: 18 30 32;
+
+  --accent: 92 190 197;
+  --accent-hover: 132 214 219;
+
+  --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -10px rgb(0 0 0 / 0.55);
+  --shadow-card: 0 1px 0 rgb(255 252 246 / 0.04) inset, 0 12px 32px -18px rgb(0 0 0 / 0.7);
+}
+
+@layer components {
+  .glass {
+    background: rgb(var(--bg-surface) / 0.6);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: rgb(var(--text-muted) / 0.25); border-radius: 999px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-muted) / 0.45); }
+
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-0;
+    --tw-ring-color: rgb(var(--brand-ring));
+  }
+
+  /* Accent text for headings. Flat brand — the emphasis is the colour shift,
+     not a gradient sweep. (Named `grad-text` for historical reasons.) */
+  .grad-text { color: rgb(var(--brand)); }
+
+  /* Opt-in smooth light/dark crossfade. */
+  .theme-transition,
+  .theme-transition * {
+    transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
+  }
+
+  /* Tactile press feedback on the chat controls. */
+  .control-press { transition: transform 120ms var(--ease-out); }
+  .control-press:not(:disabled):active { transform: scale(0.97); }
+}
+
+/* ---------- Embeddable renderer: container-query responsiveness ----------
+   A widget sizes to ITS OWN container, not the viewport, so it renders
+   correctly inside any host chat panel (CSS Container Queries — modern web
+   guidance). `aig-widget` is the renderer root; `aig-row` rows stack when the
+   container gets narrow instead of overflowing. */
+.aig-widget {
+  container-type: inline-size;
+}
+
+@container (max-width: 360px) {
+  .aig-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.shimmer-surface {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--bg-muted) / 0.65);
+}
+.shimmer-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--text-muted) / 0.09), transparent);
+  transform: translateX(-100%);
+  animation: shimmer-slide 1.6s linear infinite;
+}
+@keyframes shimmer-slide { to { transform: translateX(100%); } }
+
+/* Honor users who prefer reduced motion (accessibility — modern web guidance). */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .shimmer-surface::after {
+    animation: none !important;
+  }
+}
+
+/* Visually-hidden text that stays in the accessibility tree (e.g. the Loading
+   status label). Becomes visible if it ever receives focus. */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Visual cue for fields the user has interacted with and left invalid. Pairs
+   with the aria-invalid sync in the renderer so the cue and the announcement
+   appear together, and only after interaction (:user-invalid). */
+.aig-widget input:user-invalid,
+.aig-widget select:user-invalid {
+  border-color: rgb(244 63 94);
+}
+
+/* ---------- Widget entrance + field validation affordances ----------
+   The primitives reference these class names directly, so they have to travel
+   with the package rather than living in the demo app's global sheet. */
+
+@keyframes widget-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.widget-enter { animation: widget-enter 0.24s var(--ease-out); }
+
+@keyframes btn-glow {
+  0%, 100% { box-shadow: 0 0 4px rgb(var(--brand) / 0.3); }
+  50%      { box-shadow: 0 0 16px rgb(var(--brand) / 0.6); }
+}
+.form-submit-btn { animation: btn-glow 2s ease-in-out infinite; }
+
+@keyframes aig-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+.animate-shimmer { animation: aig-shimmer 1.6s linear infinite; }
+
+/* Field validation states (only ever reached when the host opts into a
+   validate endpoint — see FlowConfigProvider). */
+.field-valid {
+  border-color: #22c55e !important;
+  transition: border-color 0.2s ease;
+}
+.field-invalid {
+  border-color: #ef4444 !important;
+  transition: border-color 0.2s ease;
+}
+.field-validating {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.16);
+}
+.field-error-msg {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  animation: widget-enter 0.2s ease-out;
+}
+.field-valid-icon::after {
+  content: "\2713";
+  color: #22c55e;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-enter,
+  .field-error-msg,
+  .field-validating,
+  .form-submit-btn,
+  .animate-shimmer {
+    animation: none !important;
+  }
+  .control-press { transition-duration: 0ms !important; }
+  .control-press:not(:disabled):active { transform: none; }
+}
