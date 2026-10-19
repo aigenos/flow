@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import ast
 import difflib
+import importlib.machinery
 import importlib.util
 import logging
 import re
@@ -494,30 +495,41 @@ def parse_skill_md(text: str, *, source: str | None = None) -> tuple[SkillFrontm
 # ---------------------------------------------------------------------------
 
 
+class _CurrentSourceLoader(importlib.machinery.SourceFileLoader):
+    """Compile a skill's Python file as it is on disk now.
+
+    The standard loader trusts a cached ``.pyc`` whose recorded size and
+    modification second match the source, so a file saved twice within one
+    second at the same size would come back as the old code. These files are
+    edited while the server runs, so their bytecode cache is never read or
+    written.
+    """
+
+    def get_code(self, fullname: str) -> Any:
+        return self.source_to_code(self.get_data(self.path), self.path)
+
+
+def _import_current_source(mod_name: str, path: Path) -> Any:
+    loader = _CurrentSourceLoader(mod_name, str(path))
+    spec = importlib.util.spec_from_file_location(mod_name, path, loader=loader)
+    if spec is None:
+        raise ImportError(f"cannot import {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[mod_name] = module
+    loader.exec_module(module)
+    return module
+
+
 def _import_handlers(handlers_path: Path) -> Any:
     """Import handlers.py at runtime with a unique module name so multiple
     skills with the same filename don't collide in sys.modules."""
-    mod_name = f"_flow_handlers_{handlers_path.parent.name}"
-    spec = importlib.util.spec_from_file_location(mod_name, handlers_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot import handlers at {handlers_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[mod_name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _import_current_source(f"_flow_handlers_{handlers_path.parent.name}", handlers_path)
 
 
 def _import_module_file(path: Path, prefix: str) -> Any:
     """Import a standalone .py by path under a collision-proof module name."""
     stem = f"{path.parent.name}_{path.stem}".replace("-", "_")
-    mod_name = f"{prefix}_{stem}"
-    spec = importlib.util.spec_from_file_location(mod_name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot import module at {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[mod_name] = module
-    spec.loader.exec_module(module)
-    return module
+    return _import_current_source(f"{prefix}_{stem}", path)
 
 
 def _collect_tools(module: Any) -> list[tuple[str, Any]]:

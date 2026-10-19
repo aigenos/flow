@@ -1,11 +1,10 @@
 """Engine-determinism check: K repetitions of the full 3-step widget flow.
 
-The claim under test (paper §"multi-step flows with generative UI"): for a
-FIXED interpretation of each user turn, the engine's decision trace — which
-steps run, which widget renders at each pause (by id), which fields each
-submission writes, which tools fire — is IDENTICAL across runs. Interpretation
-is scripted (TestHost) precisely to isolate the engine: the model-in-the-loop
-question is measured separately by bench/gate3.
+The claim under test: for a FIXED interpretation of each user turn, the
+engine's decision trace — which steps run, which widget renders at each pause
+(by id), which fields each submission writes, which tools fire — is IDENTICAL
+across runs. Interpretation is scripted (TestHost) precisely to isolate the
+engine; a live-model comparison is examples/studio_agent/proofs/conference_trip/compare.py.
 
 Two scenarios, K runs each:
   A. full path   — name -> list tool -> selectable grid -> select row (widget

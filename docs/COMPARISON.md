@@ -151,16 +151,16 @@ in this repo.
    → `backend/tests/flow/test_widget_submission_bypass.py`,
    `test_submission_cannot_write_undeclared_field_names` in
    `backend/tests/test_gate_runtime.py`
-7. **Is the evidence open?** Partly, and here is the caveat. The eight
-   properties — seven checked at load, one (at-most-once) at runtime — are
-   computable per skill: `aigenos_flow.guarantees.analyze_markdown(text)` reports
-   each one as `holds` or `n/a` for *your* SKILL.md, and `n/a` means the property
-   has nothing to bite on, not that it passed. The adversarial harness, its skills
-   and its raw artifacts are in [`bench/gate3`](../bench/gate3), but **the
-   committed sweeps predate a hardening change to the benchmark's own skill**,
-   so no number from them describes the shipped configuration and none is
-   quoted anywhere. A re-run needs a live model and is pending. Treat the
-   properties as the claim and the benchmark as work in progress.
+7. **Is the evidence open?** Yes, with a caveat. The eight properties — seven
+   checked at load, one (at-most-once) at runtime — are computable per skill:
+   `aigenos_flow.guarantees.analyze_markdown(text)` reports each one as `holds`
+   or `n/a` for *your* SKILL.md, and `n/a` means the property has nothing to
+   bite on, not that it passed. The live-model comparison is open too:
+   [`compare.py`](../examples/studio_agent/proofs/conference_trip/compare.py) runs the same twelve tools with and
+   without the flow, and every run it counted is in
+   [`observed/`](../examples/studio_agent/proofs/conference_trip/observed). It is one conversation on two models from
+   one vendor, so treat the properties as the claim and the comparison as an
+   example of what they change.
 
 If another framework answers these well, use it with our blessing — the point
 of the rubric is that "the model usually complies" is not an answer to any of

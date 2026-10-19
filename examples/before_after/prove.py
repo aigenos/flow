@@ -15,8 +15,7 @@ No API key, ~1 second.
 WHY SCRIPTING THE MODEL IS HONEST EVIDENCE
 ------------------------------------------
 Part 1 scripts the model's output (a tool call with no code). That is not
-cheating: the point is that when the model DOES emit that call — and under
-adversarial pressure real models do, see bench/gate3 — the ReAct
+cheating: the point is that if the model DOES emit that call, the ReAct
 architecture has no enforcement point left. Part 2 throws the same hostile
 input at the wrapped agent and the runtime refuses, because the gate is a
 branch the runtime takes, not a token the model chooses.
@@ -94,9 +93,8 @@ print("\nThe policy, verbatim in the system prompt:")
 for line in body.strip().splitlines():
     print(f"    | {line}")
 
-# The run every prompt-policy agent eventually hits: under pressure, the model
-# emits the transfer call with no code. (bench/gate3 measures how often real
-# models do exactly this at temperature 0.)
+# The call a prompt-policy agent has nothing to stop: the model emits the
+# transfer with no code.
 model = ScriptedModel(messages=iter([
     AIMessage(content="", tool_calls=[{
         "name": "transfer_money", "id": "call_1",

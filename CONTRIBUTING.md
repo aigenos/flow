@@ -12,7 +12,6 @@ aigenos/flow/
 │                       + widget server (agui/ai/integrations, [server] extra)
 ├── frontend/    npm install @aigenos/flow     — React renderer + Studio app
 ├── create-app/  npx aigenos-agentic-app       — the scaffold
-├── bench/       gate3 policy-gate battery + report.py
 ├── docs/        the guides rendered at aigenos.io/docs, plus docs/media/
 └── examples/    studio_agent (the agent the Studio opens, and its proofs),
                  before_after, context_isolation, declarative_flow,

@@ -808,7 +808,7 @@ From the repo root, inside the virtualenv that
 [CONTRIBUTING.md](../CONTRIBUTING.md) sets up:
 
 ```bash
-python -m pytest -q -p no:cacheprovider                    # 1300 passed, 2 xfailed
+python -m pytest -q -p no:cacheprovider                    # 1299 passed, 2 xfailed
 npm --prefix frontend run build                            # tsc -b, then the app bundle
 npm --prefix frontend run build:lib                        # ESM + CJS + node lib builds
 npm --prefix frontend run check:lib                        # the prepack gate
@@ -831,8 +831,6 @@ component graph may import `react-router-dom`.
 - [Integration patterns](integration-patterns.md) → [integration recipe](integration-recipe.md) — embedding into an existing agent or chat app
 - [Managed connectors](managed-connectors.md) — wiring databases
 - [Comparison](COMPARISON.md) — architecture-class comparison + evaluation rubric
-- [`bench/gate3`](../bench/gate3) — the adversarial three-architecture gate
-  harness. The runner, the skills and the raw result JSONs ship, but **the
-  committed results predate a hardening change to the benchmark's own skill**,
-  so they do not describe the shipped configuration and no number from them is
-  quoted anywhere. A re-run needs a live model and is pending.
+- [The trip comparison](../examples/studio_agent/proofs/conference_trip/README.md#the-comparison-the-same-tools-with-no-flow)
+  — the same twelve tools with and without the flow on a live model, with every
+  run it counted.

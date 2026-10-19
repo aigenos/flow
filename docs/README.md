@@ -37,10 +37,8 @@ suite.
   [Why structure instead of a better prompt](../README.md#why-structure-instead-of-a-better-prompt)
   in the README.
 
-The adversarial gate harness lives in [`bench/gate3`](../bench/gate3). Its
-runner and raw artifacts ship, but the committed results predate a hardening
-change to the benchmark's own skill, so they do not describe the shipped
-configuration and no number from them is quoted in these docs. A re-run needs a
-live model and is pending.
+The live-model comparison (the same twelve tools with and without the flow,
+every run included) is
+[`examples/studio_agent/proofs/conference_trip/compare.py`](../examples/studio_agent/proofs/conference_trip/compare.py).
 
 Everything else in this folder is media (`media/`).

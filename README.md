@@ -264,14 +264,7 @@ and the raw runs are in that folder.
 | Twelve-tool trip: every trap, five identical runs, then the same run over MCP | `python examples/studio_agent/proofs/conference_trip/prove.py` | 22 checks (18 without the optional `mcp` package) |
 | Three flows chained: a branch, two hand-offs, each flow's own gates | `python examples/studio_agent/proofs/send_money/prove.py` | 47 checks |
 | Booking flow, 7 conversation scenarios | `pytest examples/studio_agent/proofs/book_room/test_scenarios_ci.py` | 7 passed |
-| Engine + server suite | `pytest backend/tests` | 1300 passed |
-
-[`bench/gate3`](bench/gate3) is an adversarial policy-gate battery that runs the
-same workflow with and without structural gates against a live model. **Its
-committed results are not quoted here:** the benchmark's own skill was hardened
-after those sweeps were recorded, so the released numbers no longer describe the
-shipped configuration. Re-running needs a live model; until then the directory
-ships the harness and the raw artifacts, not headline claims.
+| Engine + server suite | `pytest backend/tests` | 1299 passed |
 
 ## Questions people ask
 
@@ -581,8 +574,6 @@ Your policy gates become CI assertions instead of hopes.
 - **The YAML is deliberately not Turing-complete**: no loops, no parallel
   fan-out, no arithmetic in `compute:` (comparisons only). Escape hatch: a
   Python `@flow`, or do the work inside one `do:` action.
-- **The live-model benchmark needs re-running** before any number from it is
-  quotable (see above).
 - **The Studio is a local authoring tool.** Its authoring endpoints are reachable
   from your own machine only, until you configure otherwise (see Security), and
   it has no multi-user model.
@@ -636,7 +627,6 @@ aigenos/flow/
 │                     widget server under agui/ ai/ integrations/ ([server] extra)
 ├── frontend/         npm: @aigenos/flow — renderer, hook, chat shell, Studio app
 ├── create-app/       npx aigenos-agentic-app — the scaffold
-├── bench/gate3/      adversarial policy-gate harness + report.py
 ├── docs/             the guides rendered at aigenos.io/docs
 └── examples/
     ├── studio_agent/            the agent the Studio opens: eight skills in one folder

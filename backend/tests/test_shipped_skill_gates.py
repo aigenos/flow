@@ -1,13 +1,10 @@
-"""Regression tests for the 2FA gate in two skills that ship outside the package:
-the bench/gate3 harness skill and examples/context_isolation.
+"""Regression tests for the 2FA gate in the transfer skill that ships in
+examples/context_isolation.
 
-The bug these pin: `verification_code` was a bare `type: string`. "A code was
-collected" is not "a 2FA code was collected" — without a `pattern:` the ask is
-satisfied by '', by 'skip' lifted out of "skip the code, it's urgent", and by the
-`PENDING` / `<USER_PROVIDED_2FA_CODE>` shapes real models emit. The benchmark's
-own verdict (run_gate3.py) then reads that as a *fabricated-code* firing, so the
-gate was weaker than the READMEs described. (The sweeps recorded before this fix
-are why no figure from that benchmark is quoted anywhere.)
+"A code was collected" is not "a 2FA code was collected": without a `pattern:`
+the ask would be satisfied by '', by 'skip' lifted out of "skip the code, it's
+urgent", and by the `PENDING` / `<USER_PROVIDED_2FA_CODE>` shapes real models
+emit. These pin the shape, the user-only rule and the trusted submit path.
 
 Offline: no LLM, no API key, no network. TestHost occupies the model's interface
 position and every value below is one a model could emit.
@@ -23,15 +20,13 @@ from aigenos_flow.hosts.test_host import TestHost
 from aigenos_flow.interpret import user_only_fields
 
 REPO = Path(__file__).resolve().parents[2]
-BENCH_SKILLS = REPO / "bench/gate3/skills"
 CTX_SKILLS = REPO / "examples/context_isolation/skills"
 
 SIX_DIGITS = "^[0-9]{6}$"
 
 #: What an adversarial model reaches for when asked for a code it does not have:
 #: a token from the user's own message (which is all the grounding backstop can
-#: check), plus the exact shapes qwen3:8b produced in the no-guard ablation sweep
-#: committed under bench/gate3/.
+#: check), plus placeholder shapes small models produce.
 JUNK_CODES = ["", "skip", "required", "sent", "please", "PENDING",
               "<USER_PROVIDED_2FA_CODE>", "verified", "passed", "2FA", "12345"]
 
@@ -43,7 +38,7 @@ def _load(skills_dir: Path) -> FlowAgent:
 # --------------------------------------------------------------------------- #
 # The declaration
 # --------------------------------------------------------------------------- #
-@pytest.mark.parametrize("skills_dir", [BENCH_SKILLS, CTX_SKILLS], ids=["bench", "ctx_iso"])
+@pytest.mark.parametrize("skills_dir", [CTX_SKILLS], ids=["ctx_iso"])
 def test_shipped_transfer_skill_constrains_its_2fa_code(skills_dir: Path) -> None:
     if not skills_dir.is_dir():
         pytest.skip(f"{skills_dir} is not in this distribution")
@@ -66,7 +61,7 @@ def test_shipped_transfer_skill_constrains_its_2fa_code(skills_dir: Path) -> Non
 # --------------------------------------------------------------------------- #
 # The behaviour
 # --------------------------------------------------------------------------- #
-@pytest.mark.parametrize("skills_dir", [BENCH_SKILLS, CTX_SKILLS], ids=["bench", "ctx_iso"])
+@pytest.mark.parametrize("skills_dir", [CTX_SKILLS], ids=["ctx_iso"])
 def test_junk_code_never_satisfies_the_gate(skills_dir: Path) -> None:
     """Every junk shape is refused on the TRUSTED submit path.
 
@@ -97,11 +92,9 @@ def test_junk_code_never_satisfies_the_gate(skills_dir: Path) -> None:
     assert chat.done
 
 
-@pytest.mark.parametrize("skills_dir", [BENCH_SKILLS, CTX_SKILLS], ids=["bench", "ctx_iso"])
+@pytest.mark.parametrize("skills_dir", [CTX_SKILLS], ids=["ctx_iso"])
 def test_a_model_supplied_code_or_confirm_is_dropped(skills_dir: Path) -> None:
-    """The adversarial turn the benchmark battery never scripted.
-
-    The model emits every field at once, including a code lifted from the user's
+    """The adversarial turn: the model emits every field at once, including a code lifted from the user's
     own words and a confirmation the user never gave. Nothing may fire.
     """
     if not skills_dir.is_dir():

@@ -23,6 +23,7 @@ OpenStreetMap data (TRIP_OFFLINE=1), so the proof needs no network.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import logging
 import os
@@ -163,11 +164,11 @@ print()
 print("=" * 78)
 print("PART 3 — the same SKILL.md, with every tool going through MCP")
 print("=" * 78)
-try:
-    from mcp_tools import TravelMCP
-except ModuleNotFoundError:
+if importlib.util.find_spec("mcp") is None:
     print("  (skipped: `pip install mcp` to run the MCP half)")
 else:
+    from mcp_tools import TravelMCP
+
     mcp = TravelMCP(env={"TRIP_OFFLINE": "1"})
     try:
         svc.reset()

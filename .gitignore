@@ -101,6 +101,9 @@ backend/data/connectors.sqlite3*
 /docs/internal/
 /release/
 /architecture-review.html
+
+# The adversarial benchmark: kept locally until it is re-run on the current code.
+/bench/
 /aigenos_flow_arch_review.md
 
 # What the built-in `save_request` tool writes next to a skill when a flow runs.

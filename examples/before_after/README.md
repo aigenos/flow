@@ -30,10 +30,9 @@ because each one was a real defect in an earlier version of this very file:
 | a code collected for $5,000 re-used to authorize $25,000 | correcting the amount clears the code already on file and re-arms the gate |
 
 **Why scripting the model is honest evidence:** part 1 scripts the model's
-output (the transfer call with an empty code). The point is that when the
-model emits that call — and under adversarial pressure real models do, see
-[`bench/gate3`](../../bench/gate3) — the ReAct architecture has no
-enforcement point left: the prompt said "ALWAYS", the executor fired anyway.
+output (the transfer call with an empty code). The point is that if the model
+emits that call, the ReAct architecture has no enforcement point left: the
+prompt said "ALWAYS", the executor fired anyway.
 Part 2 shows the identical intent hitting a wall, because the policy is a
 branch the runtime takes, not a token the model chooses.
 
