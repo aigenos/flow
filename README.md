@@ -486,7 +486,7 @@ Pick by intent:
 | Collect a list (travellers, line items) | `- repeat: { travellers: "Add another traveller?" }` with the questions under it |
 | Answer open questions at the end | `- chat: "Ask me anything about it."` with `tools:` (lookups only) |
 | Show a widget you designed | `widget:` and `with:` on a `say:` |
-| Use tools from an MCP server | `tools=MCPTools([...]).tools()`, or `MCPTools(url=...)` for a remote one; tools you load with LangChain's MCP adapters work as they are; a tool the server marks read-only is a lookup |
+| Use tools from an MCP server | `from aigenos_flow.mcp_tools import MCPTools` (and `pip install mcp`), then `tools=MCPTools([...]).tools()`, or `MCPTools(url=...)` for a remote one; tools you load with LangChain's MCP adapters work as they are; a tool the server marks read-only is a lookup |
 | Hand the user to another skill, then carry on | `- do: add-payee`; `else:` is what to say if that skill did not finish |
 | Keep a rule in Python instead | the tool returns `{"ask_again": "amount", "say": "..."}` |
 | Derive a value instead of asking | `compute:` (re-evaluated every replay) |
