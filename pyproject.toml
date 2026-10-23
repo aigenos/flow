@@ -1,13 +1,12 @@
 # Root-level project metadata.
 #
-# Each of `engine/`, `backend/`, `frontend/` is also independently
-# installable from its own folder — this file exists so that:
+# `backend/` (pip) and `frontend/` (npm) are each installable from their own
+# folder. This file exists so that:
 #
-#   1. `pytest` invoked from the repo root collects engine + backend tests
-#      cleanly. Without it, the two `tests/` packages with overlapping
-#      filenames (`test_loader.py`) clash on import. We use rootdir mode
-#      (importmode = "importlib") so pytest uses the file path as the
-#      module identity rather than dotted package names.
+#   1. `pytest` invoked from the repo root runs the whole suite: the engine
+#      tests (backend/tests/flow/) and the server tests (backend/tests/).
+#      importlib mode makes each test file's path its module identity, so two
+#      test files with the same name in different folders cannot clash.
 #
 #   2. Tools that look at the repo root (Renovate, dependabot, codeQL,
 #      `pip-audit`) have one place to start from.

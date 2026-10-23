@@ -808,7 +808,7 @@ From the repo root, inside the virtualenv that
 [CONTRIBUTING.md](../CONTRIBUTING.md) sets up:
 
 ```bash
-python -m pytest -q -p no:cacheprovider                    # 1299 passed, 2 xfailed
+python -m pytest -q -p no:cacheprovider                    # 1299 passed, 2 xfailed (3 skip without mcp)
 npm --prefix frontend run build                            # tsc -b, then the app bundle
 npm --prefix frontend run build:lib                        # ESM + CJS + node lib builds
 npm --prefix frontend run check:lib                        # the prepack gate

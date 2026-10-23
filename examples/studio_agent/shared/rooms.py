@@ -31,12 +31,11 @@ _INITIAL_BOOKINGS: list[dict] = [
 
 _BOOKINGS: list[dict] = list(_INITIAL_BOOKINGS)
 
-# Lightweight call counters for the benchmark harness. The benchmark needs
-# to know how many times each agent actually issued an availability re-check
-# or a book attempt — outcome counts (one booking made or not) aren't enough
-# to distinguish "agent re-checked after a correction" from "agent silently
-# carried over the stale check". We count at the backend so both with_ and
-# without_ agents hit the same instrumentation.
+# Call counters, for comparing agents on the same backend: how many times an
+# agent re-checked availability or attempted a booking. Outcome counts (a
+# booking made or not) cannot tell "re-checked after a correction" from
+# "silently reused the stale check"; counting here, at the backend, measures
+# every agent the same way.
 _CALL_COUNTS: dict[str, int] = {"check_availability": 0, "book": 0}
 
 
@@ -82,8 +81,8 @@ def check_availability(room: str, date: str, start: str, end: str) -> dict:
 def book(room: str, date: str, start: str, end: str, attendees: int = 1) -> dict:
     """Persist a booking if the slot is free. Returns confirmation or error.
 
-    Note: this also increments check_availability count by 1 because of the
-    nested call. The benchmark computes external_checks = checks - books.
+    Note: this also adds one to the check_availability count, because it
+    calls check_availability itself; the agent's own checks = checks - books.
     """
     _CALL_COUNTS["book"] += 1
     avail = check_availability(room, date, start, end)

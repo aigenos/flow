@@ -138,7 +138,7 @@ in this repo.
    *did* say — lifted out of "skip the code" — is grounded, so a gate input also
    needs a `pattern:` or an enum for the runtime to reject it. That is enforced
    for anything bound into a tool argument and is the authoring rule we lead with
-   in the [cookbook](skill-authoring.md#must_elicit-is-not-enough-on-its-own-give-the-field-a-shape).
+   in the [long-form reference](skill-authoring.md#user-only-is-not-enough-on-its-own-give-the-field-a-shape).
    → `backend/tests/flow/test_must_elicit.py`, and
    `test_model_cannot_fill_the_2fa_field`,
    `test_model_cannot_answer_its_own_confirm_question`,
