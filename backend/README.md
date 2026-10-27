@@ -247,8 +247,8 @@ Resume with a widget submission
 (`Command(resume="481920, yes send it")`). A submission comes back as **typed
 field updates that bypass the LLM entirely** — pure validation and gate
 re-evaluation, so a form can't hallucinate, and a corrected value (the user
-bumps $500 → $5000 on a review screen) re-arms the 2FA gate and clears the code
-already collected. `a2ui=False` skips widget resolution entirely.
+raises the amount from 500 to 5000 on a review screen) re-arms the 2FA gate and
+clears the code already collected. `a2ui=False` skips widget resolution entirely.
 
 The widget itself either has no asset at all (derived from the `FieldSpec` on
 the fly) or is a JSON file in your widgets catalog, in git, named by
