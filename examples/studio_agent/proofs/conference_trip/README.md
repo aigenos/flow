@@ -3,7 +3,7 @@
 A trip from New York to a conference at Moscone Center: pick a flight, pick a
 hotel within walking distance, get a cab from the airport priced, review the
 itinerary, pay. Twelve tools, three policy gates, one Pay button. The skill is
-39 lines of steps and has no Python of its own beyond the twelve functions.
+40 lines of steps and has no Python of its own beyond the twelve functions.
 
 ![The conference-trip skill running in the Studio against a live model](../../../../docs/media/demo/conference_trip_demo.gif)
 
@@ -19,7 +19,7 @@ freeze-frames so a caption can be read.*
 | The tools, as Python | twelve typed functions in [`scripts.py`](../../skills/conference-trip/scripts.py), over the services in [`trip_services.py`](../../skills/conference-trip/trip_services.py) |
 | The same tools, as an MCP server | [`mcp_server.py`](../../skills/conference-trip/mcp_server.py), client in [`mcp_tools.py`](mcp_tools.py) |
 | The checkout page | [`trip_checkout.json`](../../../../backend/aigenos_flow/data/widgets/trip_checkout.json) |
-| The proof (no key, no network) | [`prove.py`](prove.py) — 22 checks |
+| The proof (no key, no network) | [`prove.py`](prove.py) — 31 checks |
 | The comparison (live model, both arms metered) | [`compare.py`](compare.py), which runs [`baseline.py`](baseline.py) and the flow |
 
 ## Run it
@@ -30,8 +30,8 @@ No API key, no network, a few seconds:
 python examples/studio_agent/proofs/conference_trip/prove.py
 ```
 
-With `pip install mcp` it also runs the MCP half (22 checks); without it that
-part is skipped (18 checks).
+With `pip install mcp` it also runs the MCP half (31 checks); without it that
+part is skipped (27 checks).
 
 With a model, in the Studio ([how to start it](../../../../README.md#the-studio)).
 The skill is in the folder the Studio serves by default, so open **Flow** and
@@ -144,6 +144,8 @@ Needs `pip install mcp`.
 | Types a wrong code | Refused; asked again | `check: { verify_approval.valid: "…" }` |
 | Presses Pay | Four tools, in order, each once | four `do:` lines after the `confirm:` |
 | Presses Pay again | Nothing: a tool that already ran does not run twice | the runtime |
+| The fare moves between the checkout page and Pay | Nothing runs; the page comes back with the new total. A fare that moved and moved back is paid | `with: { approved_total: "{{quote_trip.total}}" }`: the lookup is run again at the yes and compared with the card |
+| The payment times out after the charge went through | The retry carries the same `flow_run_id`; the service answers with the first charge. One payment | `take_payment(..., flow_run_id)` |
 
 In the filmed run the model answered the owner line with the single word "Okay."
 The flow asked for the code again and nothing was booked. In earlier runs it
@@ -161,6 +163,11 @@ runtime, so it has to hold whatever a model does.
 - **Part 2:** the same conversation five more times. The sequence of service
   calls, their arguments and the bookings hash to the same value every time.
 - **Part 3:** the same conversation with every tool call going through MCP.
+- **Part 4:** a fare that moves after the page was shown (refused, re-asked,
+  then paid at the new total), one that moves and moves back (paid), and a
+  payment that times out after it committed (the retry gets the first charge
+  back; one payment). These two cases were raised by Rayyan Maan on the
+  LangChain forum; the first version of this demo did not cover them.
 
 ## The comparison: the same tools with no flow
 
@@ -238,4 +245,12 @@ rows, and the reason behind the first one:
   Pay, and why a misread costs a correction rather than a booking.
 - The approval code is a constant in this demo. A real system verifies it
   against an identity provider; the flow's part is deciding when one is needed.
+- A tool that raises ends the turn with that error and nothing after it runs.
+  In-process (this proof) what ran before it stays on the flow's record. Behind
+  the LangGraph checkpointer (the Studio and the server) a turn that raises is
+  not saved, so the retry replays the whole turn, holds included. Whether that
+  is safe is the service's half of the contract: the flow passes the same
+  `flow_run_id` again, and a service that keys on it, as the mock payment does,
+  answers the retry with the first result. The mock holds do not, on purpose,
+  so that the proof's "booked once" checks test the engine and not the mock.
 - Flights and room rates are sample values, and every booking is a mock.

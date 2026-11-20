@@ -73,12 +73,28 @@ SF_HOTEL_TAX = 0.14             # transient occupancy tax
 CALL_LOG: list[tuple[str, dict[str, Any]]] = []
 #: Mock bookings. Nothing here leaves the process.
 LEDGER: list[dict[str, Any]] = []
+#: Payments by the flow run that made them: the mock's idempotency store. A
+#: retry with the same ``flow_run_id`` gets the same reference and no second charge.
+_PAYMENTS: dict[str, dict[str, Any]] = {}
+#: How many times take_payment was asked, retries included (read by the proof).
+PAYMENT_ATTEMPTS = 0
+#: Proof hooks. ``PRICE_SHIFT`` moves every fare by this much, as a price that
+#: changed between the checkout page and the Pay button would. A truthy
+#: ``FAIL_AFTER_COMMIT_ONCE`` makes the next payment commit and THEN raise, the
+#: way a timeout after the charge went through does.
+PRICE_SHIFT = 0.0
+FAIL_AFTER_COMMIT_ONCE = False
 
 
 def reset() -> None:
+    global PAYMENT_ATTEMPTS, PRICE_SHIFT, FAIL_AFTER_COMMIT_ONCE
     CALL_LOG.clear()
     LEDGER.clear()
+    _PAYMENTS.clear()
     _cache.clear()
+    PAYMENT_ATTEMPTS = 0
+    PRICE_SHIFT = 0.0
+    FAIL_AFTER_COMMIT_ONCE = False
 
 
 def offline() -> bool:
@@ -86,6 +102,9 @@ def offline() -> bool:
 
 
 def _log(name: str, **args: Any) -> None:
+    # The run id differs every run by design; the log is for "same calls, same arguments".
+    if args.get("flow_run_id"):
+        args["flow_run_id"] = "<run>"
     CALL_LOG.append((name, args))
 
 
@@ -340,7 +359,7 @@ def _money(x: float) -> str:
 
 
 def _totals(flight_id: str, origin: str, conference_date: str, hotel_id: str, nights: int) -> dict[str, float]:
-    fare = _flight(flight_id, origin, conference_date)["fare"]
+    fare = round(_flight(flight_id, origin, conference_date)["fare"] + PRICE_SHIFT, 2)
     room = sample_rate(hotel_id) * nights
     tax = round(room * SF_HOTEL_TAX, 2)
     route, _ = _route(hotel_id)
@@ -432,14 +451,37 @@ def reserve_cab(hotel_id: str, flight_id: str, conference_date: str) -> dict[str
     return _book("cab", _reference("CB", hotel_id, flight_id, conference_date), hotel_id=hotel_id)
 
 
-def take_payment(flight_id: str, origin: str, conference_date: str, hotel_id: str, nights: int) -> dict[str, Any]:
-    """The amount is recomputed here from the validated ids. Nothing the model said can change it."""
+def take_payment(flight_id: str, origin: str, conference_date: str, hotel_id: str, nights: int,
+                 approved_total: float | None = None, flow_run_id: str | None = None) -> dict[str, Any]:
+    """The amount is recomputed here from the validated ids. Nothing the model said can change it.
+
+    ``approved_total`` is the total the checkout page showed when the user
+    pressed Pay (the flow binds it from ``quote_trip``). The flow runs that
+    lookup again just before this tool and refuses the write itself if the
+    number moved; this check is the service's own, for callers that are not
+    the flow. ``flow_run_id`` is the flow's stable id for one run: a retry
+    after a timeout carries the same one, so it is the idempotency key.
+    """
+    global FAIL_AFTER_COMMIT_ONCE, PAYMENT_ATTEMPTS
+    PAYMENT_ATTEMPTS += 1
     _log("take_payment", flight_id=flight_id, origin=origin, conference_date=conference_date,
-         hotel_id=hotel_id, nights=nights)
+         hotel_id=hotel_id, nights=nights, approved_total=approved_total, flow_run_id=flow_run_id)
+    if flow_run_id and flow_run_id in _PAYMENTS:
+        return _PAYMENTS[flow_run_id]          # already charged for this run: same answer, no second charge
     total = _totals(flight_id, origin, conference_date, hotel_id, nights)["total"]
+    if approved_total is not None and round(float(approved_total), 2) != total:
+        return {"ask_again": "pay",
+                "say": f"The price changed since you approved it: {_money(float(approved_total))} is now "
+                       f"{_money(total)}. Nothing was charged. Please look at the new total."}
     out = _book("payment", _reference("PAY", flight_id, hotel_id, conference_date, nights, total),
                 amount=total, charged=False)
-    return {**out, "amount": f"{total:,.2f}"}
+    result = {**out, "amount": f"{total:,.2f}"}
+    if flow_run_id:
+        _PAYMENTS[flow_run_id] = result
+    if FAIL_AFTER_COMMIT_ONCE:
+        FAIL_AFTER_COMMIT_ONCE = False
+        raise TimeoutError("payment service: the response timed out after the charge was recorded")
+    return result
 
 
 # --------------------------------------------------------------------------- #

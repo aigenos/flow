@@ -107,6 +107,7 @@ _IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 #: so they may. The words are the switch; there is no separate keyword.
 _OPTIONAL_RE = re.compile(r"\(\s*optional\s*\)\s*[.?!]?\s*$", re.IGNORECASE)
 _WHOLE_REF_RE = re.compile(r"^\s*\{\{\s*[\w.]+\s*\}\}\s*$")
+_REF_RE = re.compile(r"\{\{\s*([\w.]+)\s*\}\}")
 _SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DECLINED = "Okay — no changes were made."
 
@@ -1329,6 +1330,16 @@ def _wrap(use: _Use, registry: ToolRegistry, field_specs: dict[str, FieldSpec],
     # back to a question (`ask_again`), and an empty list re-asks its inputs.
     wrapped._flow_tool_wrapper = True  # type: ignore[attr-defined]
     wrapped._flow_what_runs = what_runs  # type: ignore[attr-defined]
+    # The lookups this tool's inputs are bound from (`with: { total: "{{quote.total}}" }`).
+    # The step runner runs them again just before a gated write, so the card is
+    # compared with what the lookup says now, not with what it said when the yes
+    # was given: a price that moved in between stops the write.
+    wrapped._flow_bound_reads = sorted({  # type: ignore[attr-defined]
+        ref.split(".")[0]
+        for t in use.bindings.values() if isinstance(t, str)
+        for ref in _REF_RE.findall(t)
+        if "." in ref and ref.split(".")[0] not in names
+    })
     wrapped._flow_effect_inputs = [  # type: ignore[attr-defined]
         n for n in names if n in param_names or any(
             isinstance(t, str) and t.strip("{} ") == n for t in use.bindings.values()

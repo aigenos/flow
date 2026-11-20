@@ -790,7 +790,7 @@ assert their own claims — each one is a `prove.py` you can read as a spec:
 |---|---|
 | `examples/before_after/prove.py` | the prompt-vs-structure policy proof — 42 checks, ~1 second |
 | `examples/context_isolation/prove.py` | one flow's state never leaks into another — 26 checks, under a second |
-| `examples/studio_agent/proofs/conference_trip/prove.py` | twelve tools, three gates and one Pay button: every trap in one conversation, five identical runs, then the same run with the tools behind an MCP server — 22 checks (18 without the optional `mcp` package) |
+| `examples/studio_agent/proofs/conference_trip/prove.py` | twelve tools, three gates and one Pay button: every trap in one conversation, five identical runs, then the same run with the tools behind an MCP server, and a price that moves after the yes — 31 checks (27 without the optional `mcp` package) |
 | `examples/declarative_flow/prove.py` | a YAML-only skill on the same runtime |
 | `examples/studio_agent/proofs/send_money/prove.py` | three flows as one errand: a branch, two hand-offs, each flow's own gates, separate answers, cancelling or saying no inside a flow, then continuing or starting over — 47 checks. The front door is a skill file with no Python: a hand-off is `do: add-payee` |
 | `examples/embed_existing_agent/verify_roundtrip.py` | the hand-wired router recipe, zero LLM calls |
