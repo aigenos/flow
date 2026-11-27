@@ -15,6 +15,14 @@ It is then run five times over, and once more with every tool call going
 through the skill's MCP server instead of in-process Python. The sequence of
 service calls and the bookings come out identical each time.
 
+Part 4 is two cases Rayyan Maan raised on the LangChain forum, which the
+first version of this demo did not cover:
+
+  * the fare moves between the checkout page and Pay -> nothing runs; the page
+    comes back with the new total; a fare that moved and moved back is paid
+  * the payment times out AFTER the charge went through -> the retry carries
+    the same flow_run_id, so the service answers with the first charge; one payment
+
 The model is scripted (TestHost): it says which values it "extracted" from each
 message. That is the point — the claim is about the RUNTIME, and it has to hold
 whatever a model does. Tool data comes from the bundled snapshot of real
@@ -179,5 +187,72 @@ else:
         check(mcp.bookings() == ledger, "the MCP server's ledger holds the same four bookings")
     finally:
         mcp.close()
+
+# =========================================================================== #
+print()
+print("=" * 78)
+print("PART 4 — a price that moves after the yes, and a timeout after the charge")
+print("=" * 78)
+
+
+def to_checkout():
+    """A fresh run, driven to the checkout page: 2 nights, under budget."""
+    svc.reset()
+    host = TestHost()
+    host.queue_commands(OPENER,
+                        SetField(field="origin", value="JFK"),
+                        SetField(field="conference_date", value="2026-10-15"),
+                        SetField(field="nights", value=2))
+    chat = FlowAgent.from_dir(SKILLS, host=host).session("conference-trip").user(OPENER)
+    chat.submit(flight_id=MORNING).submit(hotel_id=CANOPY)
+    assert chat.awaiting == "pay" and chat.state["pending_widget"]["data"]["total"] == "$867.10"
+    return chat
+
+
+def payments():
+    return [b for b in svc.LEDGER if b["kind"] == "payment"]
+
+
+# (a) The fare moves by $40 after the page showed $867.10. The flow runs quote_trip
+#     again at the yes, sees $907.10, and refuses: the user never said yes to that.
+chat = to_checkout()
+svc.PRICE_SHIFT = 40.0
+chat.submit(pay=True)
+check(chat.awaiting == "pay" and not svc.LEDGER,
+      "the fare moved after the page was shown: nothing ran, Pay is asked for again")
+check(any(line.startswith("Something changed after you said yes (approved total)") for line in chat.replies),
+      "the user is told what changed")
+check(chat.state["pending_widget"]["data"]["total"] == "$907.10", "the checkout page comes back with the new total")
+chat.submit(pay=True)
+check(chat.done and [b["amount"] for b in payments()] == [907.10],
+      "a yes to the new total pays the new total, once")
+
+# (b) The fare moves and moves back before the yes: what the service says at the
+#     yes is what the page showed, so the payment goes through.
+chat = to_checkout()
+svc.PRICE_SHIFT = 40.0
+svc.PRICE_SHIFT = 0.0
+chat.submit(pay=True)
+check(chat.done and [b["amount"] for b in payments()] == [867.10],
+      "a fare that moved and moved back is paid at the approved total")
+
+# (c) The payment service records the charge, then the response times out. The
+#     flow never saw a result, so the payment is not on its record and the retry
+#     calls the tool again, with the same flow_run_id; the service answers with
+#     the first charge. One payment.
+chat = to_checkout()
+svc.FAIL_AFTER_COMMIT_ONCE = True
+try:
+    chat.submit(pay=True)
+    timed_out = False
+except TimeoutError:
+    timed_out = True
+check(timed_out and len(payments()) == 1, "the first attempt committed the charge and then timed out")
+check("take_payment" not in {k.split(":")[0] for k in chat.state["effects_log"]},
+      "the flow has no record of the payment: it would run the tool again")
+chat.submit(pay=True)
+check(chat.done and svc.PAYMENT_ATTEMPTS == 2 and len(payments()) == 1,
+      "the retry carried the same flow_run_id: same reference back, no second charge")
+check(payments()[0]["reference"] in " ".join(chat.replies), "the user sees the reference of the one charge")
 
 print(f"\nRESULT: PASS — {CHECKS} checks.")

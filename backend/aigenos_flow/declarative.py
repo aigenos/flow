@@ -1177,6 +1177,23 @@ def build_declarative_flow(
                 describe = getattr(effects[action], "_flow_what_runs", None)
                 yeses = [g for g, runs in releases.items() if any(a == action for _, a in runs)]
                 if yeses and describe is not None and not _already_fired(ctx, action):
+                    # A lookup an input is bound from (`with: { total: "{{quote.total}}" }`)
+                    # is run again now, once per turn, before the first tool this yes
+                    # lets run. The card is then compared with what the service says
+                    # at the moment the tools are about to run, not with what it said
+                    # when the yes was given: a price that moved in between is caught
+                    # below, and one that moved and moved back is not.
+                    reread = getattr(ctx, "_flow_reread_done", None)
+                    if reread is None:
+                        reread = ctx._flow_reread_done = set()  # type: ignore[attr-defined]
+                    pending = {a for g in yeses for _, a in releases.get(g, ()) if not _already_fired(ctx, a)}
+                    for read in sorted({r for a in pending for r in (getattr(effects.get(a), "_flow_bound_reads", None) or ())}):
+                        lookup = effects.get(read)
+                        if read in reread or lookup is None or not getattr(lookup, "_flow_action_readonly", False):
+                            continue
+                        reread.add(read)
+                        (ctx.state.get("results") or {}).pop(read, None)
+                        ctx.run(lookup, name=read)
                     # Each yes was given to everything it lets run, so everything
                     # still to run is compared, not only this tool: a change to
                     # the second booking's input must stop the first as well.

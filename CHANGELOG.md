@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.3.2
+
+Python package only (`pip install -U aigenos-flow`). The npm packages are unchanged
+and stay at 0.3.1.
+
+Two gaps reported by Rayyan Maan on the LangChain forum
+(https://forum.langchain.com/t/5013), with thanks.
+
+- **A lookup a write is bound to is read again at the yes** ([#2](https://github.com/aigenos/flow/issues/2)).
+  `with: { total: "{{quote.total}}" }` was compared against the value the
+  lookup had when the card was shown, so a price that moved between the card
+  and the click was not caught. The lookup now runs again just before the
+  first tool the yes releases, once per turn, and the existing check refuses
+  the write and asks again if the value differs. A value that moved and moved
+  back is allowed. This is for skills written as `steps:`; the long form's
+  `args:` bindings are still compared against the value at card time.
+- **The conference-trip demo's payment takes `flow_run_id` as its idempotency
+  key** ([#3](https://github.com/aigenos/flow/issues/3)), and the demo binds the
+  payment to the total the page showed (`approved_total`). The proof has a
+  fourth part for both: a fare that moves after the page (refused, re-asked,
+  paid at the new total), one that moves and moves back (paid), and a payment
+  that times out after it committed (the retry gets the first charge back; one
+  payment). 31 checks, from 22.
+- Docs: `flow_run_id` as a tool input, and the re-read at the yes, in
+  [steps.md](docs/steps.md).
+
 ## 0.3.1 — first public release
 
 The first version published to PyPI and npm. Earlier version numbers were

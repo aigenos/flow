@@ -30,6 +30,7 @@ TILL = '''
 from aigenos_flow import Secret, readonly
 
 FEE = {"value": 2.0}
+CALLS = {"quote": 0}
 PAID: list = []
 NOTED: list = []
 
@@ -37,6 +38,7 @@ NOTED: list = []
 @readonly
 def quote(amount: float) -> dict:
     """What it would cost."""
+    CALLS["quote"] += 1
     return {"fee": FEE["value"], "total": amount + FEE["value"]}
 
 
@@ -154,12 +156,12 @@ def test_no_runs_nothing(tmp_path):
 
 # --------------------------------------------------------------------------- held to it
 def test_an_input_that_changed_after_the_yes_was_shown_stops_the_tool(tmp_path):
-    """The fee was 2 on the card. By the time the tool is called the lookup says
-    5 (it was re-read: another flow ran in between, or the service changed its
-    mind). The user did not say yes to 5, so nothing is paid and they are asked
-    again, on a card that says 5."""
+    """The fee was 2 on the card. Between the card and the yes the service
+    changed its mind: the lookup now says 5. The flow runs the lookup again
+    just before the write, so it sees 5; the user did not say yes to 5, so
+    nothing is paid and they are asked again, on a card that says 5."""
     chat, till, _ = _to_confirm(tmp_path)
-    chat.state["results"]["quote"] = {"fee": 5.0, "total": 1505.0}
+    till.FEE["value"] = 5.0          # the service, not the flow's memo: that is what a real price move is
 
     chat.submit(confirm=True)
     assert till.PAID == [], "the tool must not run with an input the user never saw"
@@ -170,6 +172,30 @@ def test_an_input_that_changed_after_the_yes_was_shown_stops_the_tool(tmp_path):
 
     chat.submit(confirm=True)
     assert till.PAID == [{"amount": 1500.0, "payee": "landlord", "fee": 5.0, "memo": "October rent"}]
+
+
+def test_a_lookup_that_moved_and_moved_back_does_not_stop_the_tool(tmp_path):
+    """A naive memo comparison would refuse here (the memo was overwritten by a
+    different value in between). What matters is what the service says when the
+    tool is about to run, and that is what the card showed."""
+    chat, till, _ = _to_confirm(tmp_path)
+    till.FEE["value"] = 5.0
+    till.FEE["value"] = 2.0
+
+    chat.submit(confirm=True)
+    assert till.PAID == [{"amount": 1500.0, "payee": "landlord", "fee": 2.0, "memo": "October rent"}]
+    assert chat.done
+
+
+def test_the_lookup_is_read_again_once_at_the_yes_not_on_every_turn(tmp_path):
+    """The quote ran once for the card (its memo served the turns in between)
+    and once more at the yes, when the write it feeds is about to run."""
+    chat, till, _ = _to_confirm(tmp_path)
+    assert till.CALLS["quote"] == 1
+
+    chat.submit(confirm=True)
+    assert till.PAID and chat.done
+    assert till.CALLS["quote"] == 2
 
 
 def test_text_the_model_changes_in_the_same_breath_as_the_yes_does_not_ride_along(tmp_path):

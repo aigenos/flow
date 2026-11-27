@@ -55,10 +55,14 @@ steps:
       total: "{{quote_trip.total_text}}"
 
   # 6. Four tools that change something, in this order, each at most once, and only after Pay.
+  #    The payment is for the total the page showed: the flow re-prices just before
+  #    it runs and refuses if the number moved. The tool also takes flow_run_id,
+  #    so a retry after a timeout cannot charge twice.
   - do: hold_flight
   - do: hold_hotel
   - do: reserve_cab
   - do: take_payment
+    with: { approved_total: "{{quote_trip.total}}" }
   - say: "Booked. Flight {{hold_flight.reference}}, hotel {{hold_hotel.reference}}, cab {{reserve_cab.reference}}. Payment {{take_payment.reference}} for ${{take_payment.amount}}. This is a demo: nothing was reserved and no card was charged."
 ---
 

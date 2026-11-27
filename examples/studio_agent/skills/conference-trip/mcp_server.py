@@ -111,9 +111,11 @@ def reserve_cab(hotel_id: str, flight_id: str, conference_date: str) -> dict:
 
 
 @server.tool()
-def take_payment(flight_id: str, origin: str, conference_date: str, hotel_id: str, nights: int) -> dict:
-    """Take payment for the trip (mock: no card is charged)."""
-    return svc.take_payment(flight_id, origin, conference_date, hotel_id, nights)
+def take_payment(flight_id: str, origin: str, conference_date: str, hotel_id: str, nights: int,
+                 approved_total: float | None = None, flow_run_id: str | None = None) -> dict:
+    """Take payment for the trip, for the total the user approved, once per flow run (mock: no card is charged)."""
+    return svc.take_payment(flight_id, origin, conference_date, hotel_id, nights,
+                            approved_total=approved_total, flow_run_id=flow_run_id)
 
 
 # ---- for the proofs: what did this server actually do? ------------------------

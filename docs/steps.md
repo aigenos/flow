@@ -336,6 +336,10 @@ def verify_code(code: Secret) -> dict:
   `{"ask_again": "amount", "say": "That is more than your balance."}` and the
   flow says the sentence and asks that question again. Return `{"say": "..."}`
   and the sentence is said once, when the tool runs.
+- **A write that could fail after it committed** (a payment, an email) should
+  take an input named `flow_run_id`. The engine passes the id of the run, the
+  same value on a retry, so your service can answer the retry with the first
+  result instead of acting twice.
 
 Other places a tool can come from:
 
@@ -381,6 +385,11 @@ it. If one differs, nothing runs, the user is told what changed, and the yes is
 asked for again on a card that shows the inputs as they are now. One yes covers
 everything it lets run: a change to the second tool's input stops the first as
 well.
+
+An input bound from a lookup (`with: { total: "{{quote.total}}" }`) is compared
+with what the lookup says *now*: the lookup is run again at the yes, before the
+first tool it feeds. A price that moved between the card and the click stops the
+tool; one that moved and moved back does not.
 
 ## A yes from someone else
 
