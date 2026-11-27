@@ -1,6 +1,6 @@
 [project]
 name = "aigenos-flow"
-version = "0.3.1"
+version = "0.3.2"
 description = "Deterministic conversational flows for LangGraph agents — with an optional drop-in widget layer (AG-UI/A2UI/MCP-UI)."
 authors = [{ name = "aigenos" }]
 license = "Apache-2.0"

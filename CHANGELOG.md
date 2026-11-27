@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.3.2 — unreleased
+## 0.3.2
+
+Python package only (`pip install -U aigenos-flow`). The npm packages are unchanged
+and stay at 0.3.1.
 
 Two gaps reported by Rayyan Maan on the LangChain forum
 (https://forum.langchain.com/t/5013), with thanks.
